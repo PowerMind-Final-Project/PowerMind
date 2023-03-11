@@ -9,17 +9,17 @@ Original file is located at
 ## Scientific Programming with Python - BCI kit data
 PowerMind final project
 """
-
+#
 from google.colab import drive
 drive.mount('/content/drive')
 
 from google.colab import drive
 drive.mount('/gdrive')
 
-!pip install pandas
-!pip install numpy
-!pip install matplotlib
-!pip install seaborn
+# !pip install pandas
+# !pip install numpy
+# !pip install matplotlib
+# !pip install seaborn
 
 import pandas as pd
 import numpy as np

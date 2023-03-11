@@ -11,7 +11,7 @@ screen_info = pygame.display.Info()
 full_screen_width = screen_info.current_w
 full_screen_height = screen_info.current_h
 screen = pygame.display.set_mode((full_screen_width, full_screen_height), pygame.FULLSCREEN)
-pygame.display.set_caption("Conors CPT")
+pygame.display.set_caption("Connor's CPT")
 
 # Set up the font for displaying text
 font = pygame.font.Font(None, 50)

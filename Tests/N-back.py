@@ -95,11 +95,11 @@ def update_score(key_press, correct_score, incorrect_score, sequence, current_in
 
 # Display the final score to the user.
 def display_final_score(correct_score, incorrect_score):
-    screen.fill(black)
+    screen.fill(white)
 
     # Display the final score
     final_score = "Final score: {} correct, {} incorrect".format(correct_score, incorrect_score)
-    draw_text(final_score, white, full_screen_width/2, full_screen_height/2)
+    draw_text(final_score, black, full_screen_width/2, full_screen_height/2)
 
     # Update the display
     pygame.display.flip()
@@ -110,9 +110,9 @@ def display_final_score(correct_score, incorrect_score):
 # Set up the start screen
 start_screen = True
 while start_screen:
-    screen.fill(black)
-    draw_text("Press space to begin the N-back test.", white, full_screen_width/2, full_screen_height/2-60)
-    draw_text("To end the test before the time runs out press escape.", white, full_screen_width/2, full_screen_height/2)
+    screen.fill(white)
+    draw_text("Press space to begin the N-back test.", black, full_screen_width/2, full_screen_height/2-60)
+    draw_text("To end the test before the time runs out press escape.", black, full_screen_width/2, full_screen_height/2)
     pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -125,10 +125,10 @@ current_index = 3
 # Set up the first stimuli sequence screen
 first_stimuli = True
 while first_stimuli:
-      screen.fill(black)
-      draw_text("These are the first 3 letters you must remember at the start:", white, full_screen_width/2, full_screen_height/2-80)
-      draw_text(sequence[0:3], white, full_screen_width/2, full_screen_height/2)
-      draw_text("Once memorized press space to begin the test.", white, full_screen_width/2, full_screen_height/2 + 80)
+      screen.fill(white)
+      draw_text("These are the first 3 letters you must remember at the start:", black, full_screen_width/2, full_screen_height/2-80)
+      draw_text(sequence[0:3], black, full_screen_width/2, full_screen_height/2)
+      draw_text("Once memorized press space to begin the test.", black, full_screen_width/2, full_screen_height/2 + 80)
       pygame.display.flip()
       for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -152,23 +152,23 @@ while test_running:
             if event.type == pygame.QUIT:
                     test_running = False
     # Clear the screen
-    screen.fill(black)
+    screen.fill(white)
 
     # Draw the current stimulus
     current_stimulus = sequence[current_index]
-    draw_text(current_stimulus, white, full_screen_width/2, full_screen_height/2)
+    draw_text(current_stimulus, black, full_screen_width/2, full_screen_height/2)
 
     # Draw the instructions 
-    draw_text("Press the 'S' key if the letter is the same like 3 letters ago.", white, full_screen_width/2, full_screen_height/2-180)
-    draw_text("Press the 'D' key if the letter is different from 3 letters ago.", white, full_screen_width/2, full_screen_height/2-120)
+    draw_text("Press the 'S' key if the letter is the same like 3 letters ago.", black, full_screen_width/2, full_screen_height/2-180)
+    draw_text("Press the 'D' key if the letter is different from 3 letters ago.", black, full_screen_width/2, full_screen_height/2-120)
 
     # Draw the time remaining
     time_remaining = max(0, test_duration - (time.time() - start_time))
-    draw_text("Time: {:.1f}".format(time_remaining), white, 90, 50)
+    draw_text("Time: {:.1f}".format(time_remaining), black, 90, 50)
 
     # Draw the current score
-    draw_text("Correct: " + str(correct_score), white, 90, full_screen_height - 100)
-    draw_text("Incorrect: " + str(incorrect_score), white, 110, full_screen_height - 50)
+    draw_text("Correct: " + str(correct_score), black, 90, full_screen_height - 100)
+    draw_text("Incorrect: " + str(incorrect_score), black, 110, full_screen_height - 50)
 
     # Check if the test is finished
     if current_index == len(sequence):

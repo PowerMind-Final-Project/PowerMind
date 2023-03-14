@@ -10,11 +10,11 @@ Original file is located at
 PowerMind final project
 """
 #
-from google.colab import drive
-drive.mount('/content/drive')
-
-from google.colab import drive
-drive.mount('/gdrive')
+# from google.colab import drive
+# drive.mount('/content/drive')
+#
+# from google.colab import drive
+# drive.mount('/gdrive')
 
 # !pip install pandas
 # !pip install numpy

@@ -3,12 +3,16 @@ import customtkinter
 from tkinter import messagebox
 import tkinter.simpledialog as sd
 import datetime
+import subprocess
+import win32api
 
 
 def start_test():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
+    # win32api.ShellExecute(0, "open", "./BrainLinkConnect/bin/Release/BrainLinkConnect.exe", None, ".", 0)
+    subprocess.Popen(["BrainLinkConnect/bin/Release/BrainLinkConnect.exe"])
     p_label = Label(main_frame,
                     text='Ada Lovelace',
                     font=("consolas", 25))

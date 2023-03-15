@@ -3,15 +3,25 @@ import customtkinter
 from tkinter import messagebox
 import tkinter.simpledialog as sd
 import datetime
+# import nback as game
 import subprocess
-import win32api
+
+
+def open_test_window():
+    # subprocess.run(["python", "other.py"])
+    subprocess.Popen(["python","N-back-tkinter/N-back-tkinter.py"])
+    # n_win = Toplevel()
+    # n_win.attributes('-fullscreen', True)
+    # n_win.title("N-Back Test")
+    #
+    # game.create_window_content(n_win)
+
 
 
 def start_test():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
-    # win32api.ShellExecute(0, "open", "./BrainLinkConnect/bin/Release/BrainLinkConnect.exe", None, ".", 0)
     subprocess.Popen(["BrainLinkConnect/bin/Release/BrainLinkConnect.exe"])
     p_label = Label(main_frame,
                     text='Ada Lovelace',
@@ -33,7 +43,8 @@ def start_test():
     start_butt = customtkinter.CTkButton(master=start_frame,
                                          text="Start Test",
                                          font=("consolas", 20),
-                                         fg_color='grey')
+                                         fg_color='grey',
+                                         command=open_test_window)
     start_butt.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     inst_frame = Frame(main_frame,
@@ -64,12 +75,6 @@ def start_test():
                         font=("consolas", 15, "bold"))
     toggle_text.place(x=750, y=90)
 
-    bci_butt = customtkinter.CTkButton(master=start_frame,
-                                         text="Start BCI",
-                                         font=("consolas", 20),
-                                         fg_color='grey')
-    bci_butt.place(x=750, y=130)
-
     def on_on(event):
         global off_label
 
@@ -91,7 +96,7 @@ def start_test():
         on_label.bind("<Button-1>", on_on)
 
     on = PhotoImage(file='images/on.png')
-    off = PhotoImage(file='images/of.png')
+    off = PhotoImage(file='images/off.png')
 
     off_label = Label(main_frame,
                       image=off)
@@ -120,7 +125,7 @@ In addition to the current issues that have been mentioned there is another prob
                        text=text,
                        font=("consolas", 10))
     text_label.place(x=20, y=20)
-    image = PhotoImage(file='./images/head.png')
+    image = PhotoImage(file='images/head.png')
     image_label = Label(main_frame,
                         image=image)
     image_label.place(x=330, y=280)
@@ -134,9 +139,11 @@ def patient():
     column = ("Patient Name", "Date of Birth", "Action")
 
     data = (
+
         ('Ada Lovelace', 'December 10, 1815', 'Edit'),
         ('Bill Gate', 'December 21, 1915', 'Edit'),
         ('Jace Norman', 'October 15, 1815', 'Edit')
+
     )
     table = Frame(main_frame)
     table.place(x=270, y=50)
@@ -179,9 +186,11 @@ def patientinfo():
     column = ("Visit", "Date", "Summarry")
 
     data = (
+
         ('Ada Lovelace', 'December 10, 1815', 'Edit'),
         ('Ada Lovelace', 'December 21, 1915', 'Edit'),
         ('Ada Lovelace', 'October 15, 1815', 'Edit')
+
     )
     table = Frame(main_frame)
     table.place(x=80, y=100)
@@ -258,7 +267,7 @@ def patientinfo():
                       font=("consolas", 11),
                       )
     date_text.place(x=15, y=120)
-    date_img = PhotoImage(file="images/dateicon.PNG")
+    date_img = PhotoImage(file="images/dateicon.png")
     date_label = Label(newtest_frame,
                        text="dd/mm/yyyy             ",
                        image=date_img,
@@ -338,13 +347,13 @@ powermind_label = Label(window,
                         text="PowerMind",
                         bg="#A8A09E",
                         width=window_width,
-                        font=("consolas", 20)
-                        )
+                        font=("consolas", 20))
 powermind_label.pack()
 
 tab_width = int(window_width/3)
 home_tab = Label(window,
                  text="Home",
+
                  bg="#F6F6F6",
                  font=("consolas", 20),
                  padx=133)
@@ -371,6 +380,7 @@ patientinfo_tab.bind("<Button-1>", patientinfo_click)
 main_frame = Frame(window,
                    width=1000,
                    height=600,
+
                    )
 main_frame.place(x=0, y=80)
 home()

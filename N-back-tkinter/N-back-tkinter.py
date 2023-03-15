@@ -86,7 +86,6 @@ def update_score(key_press, correct_score, incorrect_score, sequence, current_in
     global time_b
 
     timestamp = datetime.datetime.now()
-    print("Hear")
 
     if key_press == 's':
         if sequence[current_index] == sequence[current_index - 3]:

@@ -45,6 +45,121 @@ def open_test_window():
     # n_win.title("N-Back Test")
     #
     # game.create_window_content(n_win)
+def new_information():
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+
+    p_label = Label(main_frame,
+                    text='Ada Lovelace',
+                    font=("consolas", 25))
+    p_label.place(x=10, y=20)
+
+    treat_label = Label(main_frame,
+                        text='Treatment2: information from another source :',
+                        font=("consolas", 15))
+    treat_label.place(x=100, y=100)
+
+    edit_butt = customtkinter.CTkButton(master=main_frame,
+                                    text="Edit",
+                                    width=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    )
+    edit_butt.place(x=750, y=100)
+
+    test_sum_label = Label(main_frame,
+                        text='Test Summary',
+                        font=("consolas", 12))
+    test_sum_label.place(x=100, y=160)
+
+    test_entry = customtkinter.CTkEntry(master = main_frame,
+                                        width = 400,
+                                        height = 300,
+                                        border_width= 2)
+    test_entry.place(x = 100, y = 190)
+
+    attention_level_label = Label(main_frame,
+                        text='Attention Level',
+                        font=("consolas", 12))
+    attention_level_label.place(x=600, y=160)
+
+    attention_entry = customtkinter.CTkEntry(master=main_frame,
+                                        width=300,
+                                        height=80,
+                                        border_width=2)
+    attention_entry.place(x=600, y=190)
+
+    location_label = Label(main_frame,
+                        text='Location of the source',
+                        font=("consolas", 12))
+    location_label.place(x=600, y=280)
+
+    location_entry = customtkinter.CTkEntry(master=main_frame,
+                                        width=300,
+                                        height=80,
+                                        border_width=2)
+    location_entry.place(x=600, y=310)
+
+    doctor_name_label = Label(main_frame,
+                           text='Name of the Doctor',
+                           font=("consolas", 12, ))
+    doctor_name_label.place(x=600, y=390)
+
+    doctor_name_entry = customtkinter.CTkEntry(master=main_frame,
+                                        width=300,
+                                        height=80,
+                                        border_width=2)
+    doctor_name_entry.place(x=600, y=420)
+
+
+
+
+
+
+
+def new_summary():
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+
+    p_label = Label(main_frame,
+                    text='Ada Lovelace',
+                    font=("consolas", 25))
+    p_label.place(x=10, y=20)
+
+    treat_label = Label(main_frame,
+                        text='Treatment1: new summary:',
+                        font=("consolas", 15))
+    treat_label.place(x=100, y=100)
+
+    edit_butt = customtkinter.CTkButton(master=main_frame,
+                                        text="Edit",
+                                        width=100,
+                                        fg_color='gray',
+                                        font=('consolas', 15),
+                                        )
+    edit_butt.place(x=750, y=100)
+
+    test_sum_label = Label(main_frame,
+                           text='Test Summary',
+                           font=("consolas", 12))
+    test_sum_label.place(x=100, y=160)
+
+    test_entry = customtkinter.CTkEntry(master=main_frame,
+                                        width=400,
+                                        height=300,
+                                        border_width=2)
+    test_entry.place(x=100, y=190)
+
+    attention_level_label = Label(main_frame,
+                                  text='Attention Level',
+                                  font=("consolas", 12))
+    attention_level_label.place(x=600, y=160)
+
+    attention_entry = customtkinter.CTkEntry(master=main_frame,
+                                             width=300,
+                                             height=80,
+                                             border_width=2)
+    attention_entry.place(x=600, y=190)
 
 def new_visit():
     for widgets in main_frame.winfo_children():
@@ -58,7 +173,32 @@ def new_visit():
     treat_label = Label(main_frame,
                         text='New Visit',
                         font=("consolas", 15, "underline"))
-    treat_label.place(x=420, y=70)
+    treat_label.place(x=450, y=70)
+
+    butt1 = customtkinter.CTkButton(master=main_frame,
+                                          text="Add new\ninformation from \n another source",
+                                          height=100,
+                                          fg_color='gray',
+                                            font=('consolas', 15),
+                                          command=new_information)
+    butt1.place(x = 130, y = 200)
+
+    butt2 = customtkinter.CTkButton(master=main_frame,
+                                          text="Add new \n test to available \ntreatment ",
+                                          height=100,
+                                          fg_color='gray',
+                                        font=('consolas', 15),
+                                          command=start_test)
+    butt2.place(x = 430, y = 200)
+
+    butt3 = customtkinter.CTkButton(master=main_frame,
+                                          text="Add new \nsummary",
+                                          height=100,
+                                        font=('consolas', 15),
+                                          fg_color='gray',
+                                          command=new_summary)
+    butt3.place(x = 730, y = 200)
+
 
 def close_treatment():
     patientinfo()

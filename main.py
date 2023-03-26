@@ -8,23 +8,20 @@ from tkcalendar import *
 import subprocess
 
 treament1 = (
-
-        ('Treatment1','visit1', 'December 10, 1815', 'Edit'),
-        ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
-    )
+    ('Visit 1', 'External', 'December 10, 1815', 'Delete'),
+    ('Visit 2', 'Test', 'December 10, 1815', 'Delete'),
+    ('Visit 3', 'Summary', 'December 10, 1815', 'Delete'),
+)
 
 treament2 = (
-
-        ('Treatment1','visit1', 'December 10, 1815', 'Edit'),
-        ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
-    )
+    ('Treatment1', 'visit1', 'December 10, 1815', 'Edit'),
+    ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
+)
 
 treament3 = (
-
-        ('Treatment1','visit1', 'December 10, 1815', 'Edit'),
-        ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
-
-    )
+    ('Treatment1', 'visit1', 'December 10, 1815', 'Edit'),
+    ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
+)
 
 summary = '''
 Diagnosis: The patient presents with a primary diagnosis of hypertension.
@@ -38,21 +35,25 @@ Progress Notes: The patient's blood pressure has been consistently high, but the
 
 
 def open_test_window():
-    # subprocess.run(["python", "other.py"])
     subprocess.Popen(["python", "N-back-tkinter/N-back-tkinter.py"])
-    # n_win = Toplevel()
-    # n_win.attributes('-fullscreen', True)
-    # n_win.title("N-Back Test")
-    #
-    # game.create_window_content(n_win)
+
 def new_information():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
-    p_label = Label(main_frame,
-                    text='Ada Lovelace',
-                    font=("consolas", 25))
-    p_label.place(x=10, y=20)
+    # Back Button
+    back_button = customtkinter.CTkButton(master=main_frame,
+                                    text="Back",
+                                    width=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=new_visit)
+    back_button.place(x=10, y=20)
+
+    # p_label = Label(main_frame,
+    #                 text='Ada Lovelace',
+    #                 font=("consolas", 25))
+    # p_label.place(x=10, y=20)
 
     treat_label = Label(main_frame,
                         text='Treatment2: information from another source :',
@@ -60,71 +61,68 @@ def new_information():
     treat_label.place(x=100, y=100)
 
     edit_butt = customtkinter.CTkButton(master=main_frame,
-                                    text="Edit",
-                                    width=100,
-                                    fg_color='gray',
-                                    font=('consolas', 15),
-                                    )
+                                        text="Save",
+                                        width=100,
+                                        fg_color='gray',
+                                        font=('consolas', 15),
+                                        )
     edit_butt.place(x=750, y=100)
 
     test_sum_label = Label(main_frame,
-                        text='Test Summary',
-                        font=("consolas", 12))
+                           text='Test Summary',
+                           font=("consolas", 12))
     test_sum_label.place(x=100, y=160)
 
-    test_entry = customtkinter.CTkEntry(master = main_frame,
-                                        width = 400,
-                                        height = 300,
-                                        border_width= 2)
-    test_entry.place(x = 100, y = 190)
+    test_entry = customtkinter.CTkEntry(master=main_frame,
+                                        width=400,
+                                        height=300,
+                                        border_width=2)
+    test_entry.place(x=100, y=190)
 
     attention_level_label = Label(main_frame,
-                        text='Attention Level',
-                        font=("consolas", 12))
+                                  text='Attention Level',
+                                  font=("consolas", 12))
     attention_level_label.place(x=600, y=160)
 
     attention_entry = customtkinter.CTkEntry(master=main_frame,
-                                        width=300,
-                                        height=80,
-                                        border_width=2)
+                                             width=300,
+                                             height=80,
+                                             border_width=2)
     attention_entry.place(x=600, y=190)
 
     location_label = Label(main_frame,
-                        text='Location of the source',
-                        font=("consolas", 12))
+                           text='Location of the source',
+                           font=("consolas", 12))
     location_label.place(x=600, y=280)
 
     location_entry = customtkinter.CTkEntry(master=main_frame,
-                                        width=300,
-                                        height=80,
-                                        border_width=2)
+                                            width=300,
+                                            height=80,
+                                            border_width=2)
     location_entry.place(x=600, y=310)
 
     doctor_name_label = Label(main_frame,
-                           text='Name of the Doctor',
-                           font=("consolas", 12, ))
+                              text='Name of the Doctor',
+                              font=("consolas", 12, ))
     doctor_name_label.place(x=600, y=390)
 
     doctor_name_entry = customtkinter.CTkEntry(master=main_frame,
-                                        width=300,
-                                        height=80,
-                                        border_width=2)
+                                               width=300,
+                                               height=80,
+                                               border_width=2)
     doctor_name_entry.place(x=600, y=420)
-
-
-
-
-
-
 
 def new_summary():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
-    p_label = Label(main_frame,
-                    text='Ada Lovelace',
-                    font=("consolas", 25))
-    p_label.place(x=10, y=20)
+    # Back Button
+    back_button = customtkinter.CTkButton(master=main_frame,
+                                    text="Back",
+                                    width=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=new_visit)
+    back_button.place(x=10, y=20)
 
     treat_label = Label(main_frame,
                         text='Treatment1: new summary:',
@@ -132,7 +130,7 @@ def new_summary():
     treat_label.place(x=100, y=100)
 
     edit_butt = customtkinter.CTkButton(master=main_frame,
-                                        text="Edit",
+                                        text="Save",
                                         width=100,
                                         fg_color='gray',
                                         font=('consolas', 15),
@@ -165,10 +163,18 @@ def new_visit():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
-    p_label = Label(main_frame,
-                    text='Ada Lovelace',
-                    font=("consolas", 25))
-    p_label.place(x=10, y=20)
+    # Back Button
+    back_button = customtkinter.CTkButton(master=main_frame,
+                                    text="Back",
+                                    width=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=show_treatment)
+    back_button.place(x=10, y=20)
+    # p_label = Label(main_frame,
+    #                 text='Ada Lovelace',
+    #                 font=("consolas", 25))
+    # p_label.place(x=10, y=20)
 
     treat_label = Label(main_frame,
                         text='New Visit',
@@ -176,29 +182,28 @@ def new_visit():
     treat_label.place(x=450, y=70)
 
     butt1 = customtkinter.CTkButton(master=main_frame,
-                                          text="Add new\ninformation from \n another source",
-                                          height=100,
-                                          fg_color='gray',
-                                            font=('consolas', 15),
-                                          command=new_information)
-    butt1.place(x = 130, y = 200)
+                                    text="Add new\ninformation from \n another source",
+                                    height=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=new_information)
+    butt1.place(x=130, y=200)
 
     butt2 = customtkinter.CTkButton(master=main_frame,
-                                          text="Add new \n test to available \ntreatment ",
-                                          height=100,
-                                          fg_color='gray',
-                                        font=('consolas', 15),
-                                          command=start_test)
-    butt2.place(x = 430, y = 200)
+                                    text="Add new \n test to available \ntreatment ",
+                                    height=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=start_test)
+    butt2.place(x=430, y=200)
 
     butt3 = customtkinter.CTkButton(master=main_frame,
-                                          text="Add new \nsummary",
-                                          height=100,
-                                        font=('consolas', 15),
-                                          fg_color='gray',
-                                          command=new_summary)
-    butt3.place(x = 730, y = 200)
-
+                                    text="Add new \nsummary",
+                                    height=100,
+                                    font=('consolas', 15),
+                                    fg_color='gray',
+                                    command=new_summary)
+    butt3.place(x=730, y=200)
 
 def close_treatment():
     patientinfo()
@@ -213,16 +218,21 @@ def show_treatment(treatment, treat_no):
     p_label.place(x=10, y=20)
 
     treat_label = Label(main_frame,
-                           text=treat_no,
-                           font=("consolas", 15, "underline"))
+                        text=treat_no,
+                        font=("consolas", 15, "underline"))
     treat_label.place(x=420, y=70)
 
-    column = ('Treatment', "Visit", "Date", "Summarry")
+    p_label = Label(main_frame,
+                    text='Visits Summary',
+                    font=("consolas", 15))
+    p_label.place(x=500, y=130)
+
+    column = ("Visit", "Type", "Date", "Action")
 
     table = customtkinter.CTkScrollableFrame(main_frame,
                                              height=50,
                                              width=410)
-    table.place(x=500, y=140)
+    table.place(x=500, y=155)
 
     for col, heading in enumerate(column):
         Label(table, text=heading,
@@ -234,30 +244,54 @@ def show_treatment(treatment, treat_no):
 
     for row, record in enumerate(treatment, start=1):
         for col, value in enumerate(record):
-            Label(table,
-                  text=value,
-                  padx=20,
-                  pady=15,
-                  borderwidth=2,
-                  relief="groove").grid(row=row, column=col, sticky="nsew")
+            if value == "Delete":
+                Label(table,
+                    text=value,
+                    font=("consolas", 15, "underline"),
+                    cursor="hand2",
+                    padx=20,
+                    pady=15,
+                    borderwidth=2,
+                    relief="groove").grid(row=row, column=col, sticky="nsew")
+            elif value == "Visit 2":
+                test = Label(table,
+                    text=value,
+                    font=("consolas", 15, "underline"),
+                    cursor="hand2",
+                    padx=20,
+                    pady=15,
+                    borderwidth=2,
+                    relief="groove",
+                    )
+                test.grid(row=row, column=col, sticky="nsew")
+                test.bind("<Button-1>", test_results)
+            else:
+                Label(table,
+                    text=value,
+                    padx=20,
+                    pady=15,
+                    borderwidth=2,
+                    relief="groove").grid(row=row, column=col, sticky="nsew")
+
     def pick_start_date(event):
         def cancel():
             cal_frame.destroy()
+
         def select():
             cal_frame.destroy()
             date = cal.get_date()
-            start_date_label.config(text= f'{date}\t\t\t')
+            start_date_label.config(text=f'{date}\t\t\t')
 
-        cal_frame = Frame(main_frame, borderwidth= 4)
-        cal_frame.place(x = 290, y = 160)
+        cal_frame = Frame(main_frame, borderwidth=4)
+        cal_frame.place(x=290, y=160)
         cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
         cal.pack()
 
-        select_butt = customtkinter.CTkButton(master = cal_frame,
-                                              text = "Select",
+        select_butt = customtkinter.CTkButton(master=cal_frame,
+                                              text="Select",
                                               width=100,
-                                              fg_color = 'gray',
-                                              command = select)
+                                              fg_color='gray',
+                                              command=select)
         select_butt.pack(pady=10, side="left")
         cancel_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Cancel",
@@ -269,90 +303,90 @@ def show_treatment(treatment, treat_no):
     def pick_end_date(event):
         def cancel():
             cal_frame.destroy()
+
         def select():
             cal_frame.destroy()
             date = cal.get_date()
-            end_date_label.config(text= f'{date}\t\t\t')
+            end_date_label.config(text=f'{date}\t\t\t')
 
-        cal_frame = Frame(main_frame, borderwidth= 4)
-        cal_frame.place(x = 290, y = 260)
+        cal_frame = Frame(main_frame, borderwidth=4)
+        cal_frame.place(x=290, y=260)
         cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
         cal.pack()
 
-        select_butt = customtkinter.CTkButton(master = cal_frame,
-                                              text = "Select",
+        select_butt = customtkinter.CTkButton(master=cal_frame,
+                                              text="Select",
                                               width=100,
                                               fg_color='gray',
-                                              command = select)
-        select_butt.pack(pady=10, side = "left")
+                                              command=select)
+        select_butt.pack(pady=10, side="left")
         cancel_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Cancel",
-                                              width = 100,
+                                              width=100,
                                               fg_color='gray',
                                               command=cancel)
         cancel_butt.pack(pady=10, side="right")
 
     start_label = Label(main_frame,
-                           text='Start Treatment',
-                           font=("consolas", 15))
+                        text='Start Treatment',
+                        font=("consolas", 15))
     start_label.place(x=60, y=130)
 
     date_img = PhotoImage(file="images/dateicon.png")
     start_date_label = Label(main_frame,
-                       text="d/mm/yy\t\t\t",
-                       image=date_img,
-                       compound="right",
-                       anchor="w",
-                       borderwidth=4,
-                       relief="groove")
+                             text="d/mm/yy\t\t\t",
+                             image=date_img,
+                             compound="right",
+                             anchor="w",
+                             borderwidth=4,
+                             relief="groove")
     start_date_label.place(x=60, y=160)
     start_date_label.image = date_img
-    start_date_label.bind("<Button-1>", pick_start_date )
-
+    start_date_label.bind("<Button-1>", pick_start_date)
 
     end_label = Label(main_frame,
-                           text='End Treatment',
-                           font=("consolas", 15))
+                      text='End Treatment',
+                      font=("consolas", 15))
     end_label.place(x=60, y=230)
 
-
     end_date_label = Label(main_frame,
-                       text="d/mm/yy\t\t\t",
-                       image=date_img,
-                       compound="right",
-                       anchor="w",
-                       borderwidth=4,
-                       relief="groove")
+                           text="d/mm/yy\t\t\t",
+                           image=date_img,
+                           compound="right",
+                           anchor="w",
+                           borderwidth=4,
+                           relief="groove")
     end_date_label.place(x=60, y=260)
     end_date_label.image = date_img
     end_date_label.image = date_img
     end_date_label.bind("<Button-1>", pick_end_date)
 
     summary_label = Label(main_frame,
-                           text='Summary',
-                           font=("consolas", 15))
+                          text='Summary',
+                          font=("consolas", 15))
     summary_label.place(x=60, y=330)
 
-    summary_text_area = customtkinter.CTkTextbox(master = main_frame,
-                                                 width = 400,
-                                                 height = 200,
-                                                 border_width= 2)
-    summary_text_area.place(x = 60, y= 370)
+    summary_text_area = customtkinter.CTkTextbox(master=main_frame,
+                                                 width=400,
+                                                 height=200,
+                                                 border_width=2)
+    summary_text_area.place(x=60, y=370)
     summary_text_area.insert("1.0", summary)
 
     new_visit_butt = customtkinter.CTkButton(master=main_frame,
-                                          text="New Visit",
-                                          height=50,
-                                          fg_color='gray',
-                                          command=new_visit)
-    new_visit_butt.place(x = 550, y = 500)
+                                             text="New Visit",
+                                             height=50,
+                                             fg_color='gray',
+                                             command=new_visit)
+    new_visit_butt.place(x=550, y=500)
 
     close_treatment_butt = customtkinter.CTkButton(master=main_frame,
-                                          text="Close Treament",
-                                          height=50,
-                                          fg_color='gray',
-                                          command=close_treatment)
-    close_treatment_butt.place(x = 700, y = 500)
+                                                   text="Close Treament",
+                                                   height=50,
+                                                   fg_color='gray',
+                                                   command=close_treatment)
+    close_treatment_butt.place(x=700, y=500)
+
 def on_row_click(event):
     # Get the index of the clicked row
     row_index = event.widget.grid_info()['row']
@@ -366,11 +400,9 @@ def on_row_click(event):
     if first_item == 'Treatment3':
         show_treatment(treament3, 'Treament3')
 
-
 def new_treatment():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
 
     p_label = Label(main_frame,
                     text='Ada Lovelace',
@@ -378,29 +410,29 @@ def new_treatment():
     p_label.place(x=10, y=20)
 
     newtreat_label = Label(main_frame,
-                    text='New Treatment',
-                    font=("consolas", 15, "underline"))
+                           text='New Treatment',
+                           font=("consolas", 15, "underline"))
     newtreat_label.place(x=465, y=70)
-
 
     def pick_start_date(event):
         def cancel():
             cal_frame.destroy()
+
         def select():
             cal_frame.destroy()
             date = cal.get_date()
-            start_date_label.config(text= f'{date}\t\t\t')
+            start_date_label.config(text=f'{date}\t\t\t')
 
-        cal_frame = Frame(main_frame, borderwidth= 4)
-        cal_frame.place(x = 290, y = 160)
+        cal_frame = Frame(main_frame, borderwidth=4)
+        cal_frame.place(x=290, y=160)
         cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
         cal.pack()
 
-        select_butt = customtkinter.CTkButton(master = cal_frame,
-                                              text = "Select",
+        select_butt = customtkinter.CTkButton(master=cal_frame,
+                                              text="Select",
                                               width=100,
-                                              fg_color = 'gray',
-                                              command = select)
+                                              fg_color='gray',
+                                              command=select)
         select_butt.pack(pady=10, side="left")
         cancel_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Cancel",
@@ -412,94 +444,94 @@ def new_treatment():
     def pick_end_date(event):
         def cancel():
             cal_frame.destroy()
+
         def select():
             cal_frame.destroy()
             date = cal.get_date()
-            end_date_label.config(text= f'{date}\t\t\t')
+            end_date_label.config(text=f'{date}\t\t\t')
 
-        cal_frame = Frame(main_frame, borderwidth= 4)
-        cal_frame.place(x = 290, y = 260)
+        cal_frame = Frame(main_frame, borderwidth=4)
+        cal_frame.place(x=290, y=260)
         cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
         cal.pack()
 
-        select_butt = customtkinter.CTkButton(master = cal_frame,
-                                              text = "Select",
+        select_butt = customtkinter.CTkButton(master=cal_frame,
+                                              text="Select",
                                               width=100,
                                               fg_color='gray',
-                                              command = select)
-        select_butt.pack(pady=10, side = "left")
+                                              command=select)
+        select_butt.pack(pady=10, side="left")
         cancel_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Cancel",
-                                              width = 100,
+                                              width=100,
                                               fg_color='gray',
                                               command=cancel)
         cancel_butt.pack(pady=10, side="right")
 
     start_label = Label(main_frame,
-                           text='Start Treatment',
-                           font=("consolas", 15))
+                        text='Start Treatment',
+                        font=("consolas", 15))
     start_label.place(x=60, y=130)
 
     date_img = PhotoImage(file="images/dateicon.png")
     start_date_label = Label(main_frame,
-                       text="d/mm/yy\t\t\t",
-                       image=date_img,
-                       compound="right",
-                       anchor="w",
-                       borderwidth=4,
-                       relief="groove")
+                             text="d/mm/yy\t\t\t",
+                             image=date_img,
+                             compound="right",
+                             anchor="w",
+                             borderwidth=4,
+                             relief="groove")
     start_date_label.place(x=60, y=160)
     start_date_label.image = date_img
-    start_date_label.bind("<Button-1>", pick_start_date )
-
+    start_date_label.bind("<Button-1>", pick_start_date)
 
     end_label = Label(main_frame,
-                           text='End Treatment',
-                           font=("consolas", 15))
+                      text='End Treatment',
+                      font=("consolas", 15))
     end_label.place(x=60, y=230)
 
-
     end_date_label = Label(main_frame,
-                       text="d/mm/yy\t\t\t",
-                       image=date_img,
-                       compound="right",
-                       anchor="w",
-                       borderwidth=4,
-                       relief="groove")
+                           text="d/mm/yy\t\t\t",
+                           image=date_img,
+                           compound="right",
+                           anchor="w",
+                           borderwidth=4,
+                           relief="groove")
     end_date_label.place(x=60, y=260)
     end_date_label.image = date_img
     end_date_label.image = date_img
     end_date_label.bind("<Button-1>", pick_end_date)
 
     summary_label = Label(main_frame,
-                           text='Summary',
-                           font=("consolas", 15))
+                          text='Summary',
+                          font=("consolas", 15))
     summary_label.place(x=60, y=330)
 
-    summary_text_area = customtkinter.CTkTextbox(master = main_frame,
-                                                 width = 400,
-                                                 height = 200,
-                                                 border_width= 2)
-    summary_text_area.place(x = 60, y= 370)
+    summary_text_area = customtkinter.CTkTextbox(master=main_frame,
+                                                 width=400,
+                                                 height=200,
+                                                 border_width=2)
+    summary_text_area.place(x=60, y=370)
 
     start_new_treatment = customtkinter.CTkButton(master=main_frame,
-                                          text="Start New Treatment",
-                                          height=50,
-                                          fg_color='gray',
-                                          )
-    start_new_treatment.place(x = 750, y = 270)
-
-
+                                                  text="Start New Treatment",
+                                                  height=50,
+                                                  fg_color='gray',
+                                                  )
+    start_new_treatment.place(x=750, y=270)
 
 def start_test():
+    # Clear
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
-    subprocess.Popen(["BrainLinkConnect/bin/Release/BrainLinkConnect.exe"])
-    p_label = Label(main_frame,
-                    text='Ada Lovelace',
-                    font=("consolas", 25))
-    p_label.place(x=10, y=20)
+    # Back Button
+    back_button = customtkinter.CTkButton(master=main_frame,
+                                    text="Back",
+                                    width=100,
+                                    fg_color='gray',
+                                    font=('consolas', 15),
+                                    command=new_visit)
+    back_button.place(x=10, y=20)
 
     p_label2 = Label(main_frame,
                      text='Conor CPT test:',
@@ -579,7 +611,6 @@ def start_test():
 
     off_label.bind("<Button-1>", on_off)
 
-
 def home():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
@@ -604,22 +635,20 @@ In addition to the current issues that have been mentioned there is another prob
     image_label.place(x=330, y=280)
     image_label.image = image
 
-
 def patient():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
-    column = ("Patient Name", "Date of Birth", "Action")
+    column = ("Patient Name", "Date of Birth", "Edit", "Delete")
 
     data = (
-
-        ('Ada Lovelace', 'December 10, 1815', 'Edit'),
-        ('Bill Gate', 'December 21, 1915', 'Edit'),
-        ('Jace Norman', 'October 15, 1815', 'Edit')
-
+        ('Ada Lovelace', 'December 10, 1815', 'Edit', 'Delete'),
+        ('Bill Gate', 'December 21, 1915', 'Edit', 'Delete'),
+        ('Jace Norman', 'October 15, 1815', 'Edit', 'Delete')
     )
+
     table = Frame(main_frame)
-    table.place(x=270, y=50)
+    table.place(x=200, y=50)
 
     for col, heading in enumerate(column):
         Label(table,
@@ -633,13 +662,33 @@ def patient():
 
     for row, record in enumerate(data, start=1):
         for col, value in enumerate(record):
-            Label(table,
-                  text=value,
-                  padx=40,
-                  pady=30,
-                  borderwidth=2,
-                  relief="groove").grid(row=row, column=col, sticky="nsew")
+            if value == "Edit" or value == "Delete":
+                label = Label(table,
+                    text=value,
+                    font="consolas 15 underline",
+                    padx=40,
+                    pady=30,
+                    borderwidth=2,
+                    relief="groove")
+                label.grid(row=row, column=col, sticky="nsew")
+                label.bind("<Button-1>", lambda e: print(e))
+            else:
+                Label(table,
+                    text=value,
+                    padx=40,
+                    pady=30,
+                    borderwidth=2,
+                    relief="groove").grid(row=row, column=col, sticky="nsew")
 
+    new_patient_button = customtkinter.CTkButton(master=main_frame,
+                                                 text='New Patient',
+                                                 fg_color='gray',
+                                                 font=("consolas",
+                                                       15, "bold"),
+                                                 height=50,
+                                                 )
+                                                # command = new_treatment)
+    new_patient_button.place(x=650, y=400)
 
 def patientinfo():
     global data
@@ -654,26 +703,19 @@ def patientinfo():
     p_label.place(x=10, y=20)
 
     p_label = Label(main_frame,
-                    text='Visit Summary',
+                    text='Visits Summary',
                     font=("consolas", 15))
     p_label.place(x=80, y=70)
-    column = ('Treatment1',"Visit", "Date", "Summarry")
+    column = ('Treatment', "Visits", "Date", "Delete")
 
     data = (
-
-        ('Treatment1','visit1', 'December 10, 1815', 'Edit'),
-        ('Treatment2','visit1', 'December 10, 1915', 'Edit'),
-        ('Treatment3', 'visit1', 'December 10, 1815', 'Edit'),
-        ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
-        ('Treatment2', 'visit2', 'December 10, 1915', 'Edit'),
-        ('Treatment3', 'visit2', 'December 10, 1815', 'Edit')
-
+        ('Treatment1', '3 Visits', 'December 10, 1815', 'Delete'),
+        ('Treatment2', '2 Visits', 'December 10, 1915', 'Delete'),
+        ('Treatment3', '0 Visits', 'December 10, 1815', 'Delete'),
     )
 
-
-
     table = customtkinter.CTkScrollableFrame(main_frame,
-                                             height = 50,
+                                             height=50,
                                              width=410)
     table.place(x=80, y=100)
 
@@ -687,23 +729,51 @@ def patientinfo():
 
     for row, record in enumerate(data, start=1):
         for col, value in enumerate(record):
-            info = Label(table,
-                  text=value,
-                  padx=20,
-                  pady=15,
-                  borderwidth=2,
-                  relief="groove")
-            info.grid(row=row, column=col, sticky="nsew")
+            # If name of treatment (col 0)
+            if col == 0:
+                info = Label(table,
+                            text=value,
+                            font=("consolas", 15, "underline"),
+                            padx=20,
+                            pady=15,
+                            borderwidth=2,
+                            relief="groove",
+                            cursor="hand2"
+                            )
+                info.grid(row=row, column=col, sticky="nsew")
+                info.bind('<Button-1>', on_row_click)
+            # Delete
+            elif value == "Delete":
+                info = Label(table,
+                            text=value,
+                            font=("consolas", 15, "underline"),
+                            padx=20,
+                            pady=15,
+                            borderwidth=2,
+                            relief="groove",
+                            cursor="hand2"
+                            )
+                info.grid(row=row, column=col, sticky="nsew")
+                # bind Delete Button
+                # info.bind('<Button-1>', on_row_click)
+            else:
+                info = Label(table,
+                             text=value,
+                             padx=20,
+                             pady=15,
+                             borderwidth=2,
+                             relief="groove"
+                             )
+                info.grid(row=row, column=col, sticky="nsew")
 
-            info.bind('<Button-1>', on_row_click)
-    new_treatment_button = customtkinter.CTkButton(master = main_frame,
-                                                   text = 'New Treatment',
-                                                   fg_color= 'gray',
-                                                   font=("consolas", 15, "bold"),
-                                                   height = 50,
-                                                   command= new_treatment)
-    new_treatment_button.place(x =650, y = 400)
-    
+    new_treatment_button = customtkinter.CTkButton(master=main_frame,
+                                                   text='New Treatment',
+                                                   fg_color='gray',
+                                                   font=("consolas",
+                                                         15, "bold"),
+                                                   height=50,
+                                                   command=new_treatment)
+    new_treatment_button.place(x=650, y=400)
 
     '''newtest_frame = Frame(main_frame,
                           width=250,
@@ -798,6 +868,20 @@ def patientinfo():
     start_butt.place(x=50, y=250)
     '''
 
+def test_results(event):
+    # Clear
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    # Back Button
+    back_button = customtkinter.CTkButton(master=main_frame,
+                                          text="Back",
+                                          width=100,
+                                          fg_color='gray',
+                                          font=('consolas', 15),
+                                          )
+                                    # command=new_visit)
+    back_button.place(x=10, y=20)
+
 window = Tk()
 window.title("PowerMind")
 # Set the width and height of the window
@@ -873,10 +957,9 @@ patientinfo_tab.bind("<Button-1>", patientinfo_click)
 main_frame = Frame(window,
                    width=1000,
                    height=600,
-
                    )
 main_frame.place(x=0, y=80)
-home()
 
+home()
 
 window.mainloop()

@@ -1,0 +1,11 @@
+new_id,name,treatment_id,date,summary,attention_level,external_source
+1,First appointment and diagnosis,1,03/01/2023,In this appointment the main goal is to understand the metrics of the brain for the first time.,65,
+2,Medication understanding appointment ,1,10/01/2023,Once the meeting will be over i will be able to understand if the medications had the correct effect.,72,Hand writing test has been made
+3,Third appointment and conclusion of phase,1,14/01/2023,Today we will see finally the end result of the first treatment phase.,80,
+4,Testing phase and medication adjustment,2,02/02/2023, After almost 2 weeks of taking medication and today we will try 2 test one after another.,60,Personal questioner has been performed
+5,Second trial of test phase,2, 10/02/2023 ,Once again we will be performing all 4 tests one after another.,90,
+6,End of testing phase,2,21/02/2023 ,Today its all about talking and trying to understand how he feels so far after performing the tests.,0,Personal questioner has been performed
+7,Basic conclusion of test results,3,26/02/2023,Showing the test results and addressing the fact that we can see an improvement.,0,
+8,Medication adjustment for the next 2 weeks,3,03/03/2023,Medication adjustment for the next 2 weeks to see if we can move on.,0,
+9,Final medication adjustment,3,14/03/2023,We needed to make a final change to the volume of the medications.,0,Personal questioner has been performed
+10,Last meeting and saying farewell,3,27/03/2023,End of cycle for now.,0,

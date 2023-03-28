@@ -1,0 +1,5 @@
+treatment_id,treatment_name,patient_id,start_date,end_date,summary
+1,1st treatment,1,03/01/2023,14/01/2023,Diagnosis phase and basic mediation and test adjusters.
+2,2nd treatment,1,02/02/2023,21/02/2023,Advanced medication adjacent and testing phase.
+3,3rd treatment,1,26/02/2023,27/03/2023,Final conclusions regarding all parameters and final release.
+4,New_treatment_1,1,20/03/2023,27/03/2023,test

@@ -3,22 +3,45 @@ import customtkinter
 from tkinter import messagebox
 import tkinter.simpledialog as sd
 import datetime
+import data_controller as dc
 # import nback as game
+
+import numpy as np
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from tkcalendar import *
 import subprocess
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pandas.api.types import CategoricalDtype
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report
+from matplotlib import pyplot as plt
+from sklearn import datasets
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+from sklearn.datasets import load_iris
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
+import plotly.express as px
 
-treament1 = (
+# from Alfa.Data.BCI_data import TimeAxis, df, ratio
+
+treatment1 = (
     ('Visit 1', 'External', 'December 10, 1815', 'Delete'),
     ('Visit 2', 'Test', 'December 10, 1815', 'Delete'),
     ('Visit 3', 'Summary', 'December 10, 1815', 'Delete'),
 )
 
-treament2 = (
+treatment2 = (
     ('Treatment1', 'visit1', 'December 10, 1815', 'Edit'),
     ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
 )
 
-treament3 = (
+treatment3 = (
     ('Treatment1', 'visit1', 'December 10, 1815', 'Edit'),
     ('Treatment1', 'visit2', 'December 10, 1815', 'Edit'),
 )
@@ -37,17 +60,22 @@ Progress Notes: The patient's blood pressure has been consistently high, but the
 def open_test_window():
     subprocess.Popen(["python", "N-back-tkinter/N-back-tkinter.py"])
 
+
+def open_result_window():
+    subprocess.Popen(["python", "Data/BCI_data.py"])
+
+
 def new_information():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
-                                    text="Back",
-                                    width=100,
-                                    fg_color='gray',
-                                    font=('consolas', 15),
-                                    command=new_visit)
+                                          text="Back",
+                                          width=100,
+                                          fg_color='gray',
+                                          font=('consolas', 15),
+                                          command=new_visit)
     back_button.place(x=10, y=20)
 
     # p_label = Label(main_frame,
@@ -103,7 +131,7 @@ def new_information():
 
     doctor_name_label = Label(main_frame,
                               text='Name of the Doctor',
-                              font=("consolas", 12, ))
+                              font=("consolas", 12,))
     doctor_name_label.place(x=600, y=390)
 
     doctor_name_entry = customtkinter.CTkEntry(master=main_frame,
@@ -112,16 +140,18 @@ def new_information():
                                                border_width=2)
     doctor_name_entry.place(x=600, y=420)
 
+
 def new_summary():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
-                                    text="Back",
-                                    width=100,
-                                    fg_color='gray',
-                                    font=('consolas', 15),
-                                    command=new_visit)
+                                          text="Back",
+                                          width=100,
+                                          fg_color='gray',
+                                          font=('consolas', 15),
+                                          command=new_visit)
     back_button.place(x=10, y=20)
 
     treat_label = Label(main_frame,
@@ -159,17 +189,18 @@ def new_summary():
                                              border_width=2)
     attention_entry.place(x=600, y=190)
 
+
 def new_visit():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
-                                    text="Back",
-                                    width=100,
-                                    fg_color='gray',
-                                    font=('consolas', 15),
-                                    command=show_treatment)
+                                          text="Back",
+                                          width=100,
+                                          fg_color='gray',
+                                          font=('consolas', 15),
+                                          command=lambda: show_treatment(1))
     back_button.place(x=10, y=20)
     # p_label = Label(main_frame,
     #                 text='Ada Lovelace',
@@ -205,22 +236,32 @@ def new_visit():
                                     command=new_summary)
     butt3.place(x=730, y=200)
 
+
 def close_treatment():
     patientinfo()
 
-def show_treatment(treatment, treat_no):
+
+def show_treatment(treatment_id):
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+    current_treatment = dc.get_treatment_by_id(treatment_id)
+    patient_id = int(current_treatment[2])
+    current_patient = dc.get_patient_by_id(patient_id)
 
     p_label = Label(main_frame,
-                    text='Ada Lovelace',
+                    text=current_patient[1] + " " + current_patient[2],
                     font=("consolas", 25))
     p_label.place(x=10, y=20)
 
     treat_label = Label(main_frame,
-                        text=treat_no,
-                        font=("consolas", 15, "underline"))
+                    text=current_treatment[1],
+                    font=("consolas", 20))
     treat_label.place(x=420, y=70)
+
+    # treat_label = Label(main_frame,
+    #                     text=treatment_id,
+    #                     font=("consolas", 15, "underline"))
+    # treat_label.place(x=420, y=70)
 
     p_label = Label(main_frame,
                     text='Visits Summary',
@@ -230,7 +271,7 @@ def show_treatment(treatment, treat_no):
     column = ("Visit", "Type", "Date", "Action")
 
     table = customtkinter.CTkScrollableFrame(main_frame,
-                                             height=50,
+                                             height=300,
                                              width=410)
     table.place(x=500, y=155)
 
@@ -244,34 +285,34 @@ def show_treatment(treatment, treat_no):
 
     for row, record in enumerate(treatment, start=1):
         for col, value in enumerate(record):
-            if value == "Delete":
-                Label(table,
-                    text=value,
-                    font=("consolas", 15, "underline"),
-                    cursor="hand2",
-                    padx=20,
-                    pady=15,
-                    borderwidth=2,
-                    relief="groove").grid(row=row, column=col, sticky="nsew")
-            elif value == "Visit 2":
-                test = Label(table,
-                    text=value,
-                    font=("consolas", 15, "underline"),
-                    cursor="hand2",
-                    padx=20,
-                    pady=15,
-                    borderwidth=2,
-                    relief="groove",
-                    )
-                test.grid(row=row, column=col, sticky="nsew")
-                test.bind("<Button-1>", test_results)
-            else:
-                Label(table,
-                    text=value,
-                    padx=20,
-                    pady=15,
-                    borderwidth=2,
-                    relief="groove").grid(row=row, column=col, sticky="nsew")
+            # if value == "Delete":
+            #     Label(table,
+            #           text=value,
+            #           font=("consolas", 12, "underline"),
+            #           cursor="hand2",
+            #           padx=20,
+            #           pady=15,
+            #           borderwidth=2,
+            #           relief="groove").grid(row=row, column=col, sticky="nsew")
+            # if col == 0:
+            #     test = Label(table,
+            #                  text=value,
+            #                  font=("consolas", 12, "underline"),
+            #                  cursor="hand2",
+            #                  padx=20,
+            #                  pady=15,
+            #                  borderwidth=2,
+            #                  relief="groove",
+            #                  )
+            #     test.grid(row=row, column=col, sticky="nsew")
+            #     test.bind("<Button-1>", test_results)
+            # else:
+            Label(table,
+                  text=value,
+                  padx=20,
+                  pady=15,
+                  borderwidth=2,
+                  relief="groove").grid(row=row, column=col, sticky="nsew")
 
     def pick_start_date(event):
         def cancel():
@@ -344,6 +385,7 @@ def show_treatment(treatment, treat_no):
     start_date_label.image = date_img
     start_date_label.bind("<Button-1>", pick_start_date)
 
+    start_date_label.config(text=f'{current_treatment[3]}\t\t\t')
     end_label = Label(main_frame,
                       text='End Treatment',
                       font=("consolas", 15))
@@ -361,6 +403,7 @@ def show_treatment(treatment, treat_no):
     end_date_label.image = date_img
     end_date_label.bind("<Button-1>", pick_end_date)
 
+    end_date_label.config(text=f'{current_treatment[4]}\t\t\t')
     summary_label = Label(main_frame,
                           text='Summary',
                           font=("consolas", 15))
@@ -371,7 +414,7 @@ def show_treatment(treatment, treat_no):
                                                  height=200,
                                                  border_width=2)
     summary_text_area.place(x=60, y=370)
-    summary_text_area.insert("1.0", summary)
+    summary_text_area.insert("1.0", current_treatment[-1])
 
     new_visit_butt = customtkinter.CTkButton(master=main_frame,
                                              text="New Visit",
@@ -381,26 +424,36 @@ def show_treatment(treatment, treat_no):
     new_visit_butt.place(x=550, y=500)
 
     close_treatment_butt = customtkinter.CTkButton(master=main_frame,
-                                                   text="Close Treament",
+                                                   text="Close treatment",
                                                    height=50,
                                                    fg_color='gray',
                                                    command=close_treatment)
     close_treatment_butt.place(x=700, y=500)
 
+
 def on_row_click(event):
     # Get the index of the clicked row
     row_index = event.widget.grid_info()['row']
     # Get the first item in the tuple for the clicked row
-    first_item = data[row_index - 1][0]
-    print(first_item)
-    if first_item == 'Treatment1':
-        show_treatment(treament1, 'Treament1')
-    if first_item == 'Treatment2':
-        show_treatment(treament2, 'Treament2')
-    if first_item == 'Treatment3':
-        show_treatment(treament3, 'Treament3')
+    treatment_id = data[row_index-1][0]
+    show_treatment(treatment_id)
+    # if first_item == '1st treatment':
+    #     show_treatment(1)
+    # if first_item == '2nd treatment':
+    #     show_treatment(2)
+    # if first_item == '3rd treatment':
+    #     show_treatment(3)
 
-def new_treatment():
+
+def add_treatment(treatment_name, patient_id, start_date, end_date, summary):
+    start_date = datetime.datetime.strptime(start_date, "%m/%d/%y").strftime("%d/%m/%Y")
+    end_date = datetime.datetime.strptime(end_date, "%m/%d/%y").strftime("%d/%m/%Y")
+    dc.add_treatment(treatment_name, patient_id, start_date, end_date, summary)
+    patientinfo(patient_id)
+
+
+# New treatment button
+def new_treatment(patient_id):
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
@@ -517,20 +570,29 @@ def new_treatment():
                                                   text="Start New Treatment",
                                                   height=50,
                                                   fg_color='gray',
+                                                  command=lambda:
+                                                  add_treatment("New_treatment_"+str(patient_id),
+                                                                patient_id,
+                                                                start_date_label['text'][:-len("\t\t\t")],
+                                                                end_date_label['text'][:-len("\t\t\t")],
+                                                                summary_text_area.get('1.0', END)[:-len("\n")])
                                                   )
     start_new_treatment.place(x=750, y=270)
+# treatment_name, patient_id, start_date, end_date, summary
 
 def start_test():
+
+    subprocess.Popen(["BrainLinkConnect/bin/Release/BrainLinkConnect.exe"])
     # Clear
     for widgets in main_frame.winfo_children():
         widgets.destroy()
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
-                                    text="Back",
-                                    width=100,
-                                    fg_color='gray',
-                                    font=('consolas', 15),
-                                    command=new_visit)
+                                          text="Back",
+                                          width=100,
+                                          fg_color='gray',
+                                          font=('consolas', 15),
+                                          command=new_visit)
     back_button.place(x=10, y=20)
 
     p_label2 = Label(main_frame,
@@ -611,6 +673,8 @@ def start_test():
 
     off_label.bind("<Button-1>", on_off)
 
+
+# Openning screen of the system itself , under the tab "Home"
 def home():
     for widgets in main_frame.winfo_children():
         widgets.destroy()
@@ -634,6 +698,7 @@ In addition to the current issues that have been mentioned there is another prob
                         image=image)
     image_label.place(x=330, y=280)
     image_label.image = image
+
 
 def patient():
     for widgets in main_frame.winfo_children():
@@ -662,23 +727,23 @@ def patient():
 
     for row, record in enumerate(data, start=1):
         for col, value in enumerate(record):
-            if value == "Edit" or value == "Delete":
-                label = Label(table,
-                    text=value,
-                    font="consolas 15 underline",
-                    padx=40,
-                    pady=30,
-                    borderwidth=2,
-                    relief="groove")
-                label.grid(row=row, column=col, sticky="nsew")
-                label.bind("<Button-1>", lambda e: print(e))
-            else:
-                Label(table,
-                    text=value,
-                    padx=40,
-                    pady=30,
-                    borderwidth=2,
-                    relief="groove").grid(row=row, column=col, sticky="nsew")
+            # if value == "Edit" or value == "Delete":
+            #     label = Label(table,
+            #                   text=value,
+            #                   font="consolas 12 underline",
+            #                   padx=40,
+            #                   pady=30,
+            #                   borderwidth=2,
+            #                   relief="groove")
+            #     label.grid(row=row, column=col, sticky="nsew")
+            #     label.bind("<Button-1>", lambda e: print(e))
+            # else:
+            Label(table,
+                  text=value,
+                  padx=40,
+                  pady=30,
+                  borderwidth=2,
+                  relief="groove").grid(row=row, column=col, sticky="nsew")
 
     new_patient_button = customtkinter.CTkButton(master=main_frame,
                                                  text='New Patient',
@@ -687,23 +752,25 @@ def patient():
                                                        15, "bold"),
                                                  height=50,
                                                  )
-                                                # command = new_treatment)
-    new_patient_button.place(x=650, y=400)
+    # command = new_treatment)
+    new_patient_button.place(x=650, y=500)
 
-def patientinfo():
+
+def patientinfo(patient_id=1):
     global data
     for widgets in main_frame.winfo_children():
         widgets.destroy()
     main_frame.config(width=1000,
                       height=600)
-
+    current_patient = dc.get_patient_by_id(patient_id)
     p_label = Label(main_frame,
-                    text='Ada Lovelace',
+                    # fullname
+                    text=current_patient[1] + " " + current_patient[2],
                     font=("consolas", 25))
     p_label.place(x=10, y=20)
 
     p_label = Label(main_frame,
-                    text='Visits Summary',
+                    text='Treatments List',
                     font=("consolas", 15))
     p_label.place(x=80, y=70)
     column = ('Treatment', "Visits", "Date", "Delete")
@@ -715,9 +782,8 @@ def patientinfo():
     )
 
     table = customtkinter.CTkScrollableFrame(main_frame,
-                                             height=50,
-                                             width=410)
-    table.place(x=80, y=100)
+                                             width=900)
+    table.place(x=40, y=100)
 
     for col, heading in enumerate(column):
         Label(table, text=heading,
@@ -732,30 +798,30 @@ def patientinfo():
             # If name of treatment (col 0)
             if col == 0:
                 info = Label(table,
-                            text=value,
-                            font=("consolas", 15, "underline"),
-                            padx=20,
-                            pady=15,
-                            borderwidth=2,
-                            relief="groove",
-                            cursor="hand2"
-                            )
+                             text=value,
+                             font=("consolas", 15, "underline"),
+                             padx=20,
+                             pady=15,
+                             borderwidth=2,
+                             relief="groove",
+                             cursor="hand2"
+                             )
                 info.grid(row=row, column=col, sticky="nsew")
                 info.bind('<Button-1>', on_row_click)
             # Delete
-            elif value == "Delete":
-                info = Label(table,
-                            text=value,
-                            font=("consolas", 15, "underline"),
-                            padx=20,
-                            pady=15,
-                            borderwidth=2,
-                            relief="groove",
-                            cursor="hand2"
-                            )
-                info.grid(row=row, column=col, sticky="nsew")
-                # bind Delete Button
-                # info.bind('<Button-1>', on_row_click)
+            # elif value == "Delete":
+            #     info = Label(table,
+            #                  text=value,
+            #                  font=("consolas", 15, "underline"),
+            #                  padx=20,
+            #                  pady=15,
+            #                  borderwidth=2,
+            #                  relief="groove",
+            #                  cursor="hand2"
+            #                  )
+            #     info.grid(row=row, column=col, sticky="nsew")
+            #     # bind Delete Button
+            #     # info.bind('<Button-1>', on_row_click)
             else:
                 info = Label(table,
                              text=value,
@@ -772,7 +838,7 @@ def patientinfo():
                                                    font=("consolas",
                                                          15, "bold"),
                                                    height=50,
-                                                   command=new_treatment)
+                                                   command=lambda: new_treatment(patient_id))
     new_treatment_button.place(x=650, y=400)
 
     '''newtest_frame = Frame(main_frame,
@@ -868,25 +934,264 @@ def patientinfo():
     start_butt.place(x=50, y=250)
     '''
 
-def test_results(event):
+
+def BCI_data():
+
+    df = pd.read_csv("test.csv")
+    df.head()
+    # df.info()
+    copy_df = df.copy()
+
+    Timestamp = df["Timestamp"]
+    meanAttention = df["Attention"].mean()
+    meanMeditation = df["Meditation"].mean()
+    meanTheta = df["Theta"].mean()
+    meanLowBeta = df["LowBeta"].mean()
+    # meanHighBeta= df["HighBeta"].mean()
+
+    # df["Timestamp"].fillna(meanTimestamp,inplace=True)
+    df["Attention"].fillna(meanAttention, inplace=True)
+    df["Meditation"].fillna(meanMeditation, inplace=True)
+    df["Theta"].fillna(meanTheta, inplace=True)
+    df["LowBeta"].fillna(meanLowBeta, inplace=True)
+    # df["HighBeta"].fillna(meanHighBeta,inplace=True)
+
+
+    # delete rows
+    df.drop('Delta', inplace=True, axis=1)
+    df.drop('LowAlpha', inplace=True, axis=1)
+    df.drop('HighAlpha', inplace=True, axis=1)
+    df.drop('HighBeta', inplace=True, axis=1)
+    df.drop('LowGamma', inplace=True, axis=1)
+    df.drop('HighGamma', inplace=True, axis=1)
+
+    # Updated the data form
+    cleaned_df = df
+
+    # Define a Series of timestamps as strings
+    timestamp_series_str = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt = pd.to_datetime(timestamp_series_str, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec = timestamp_series_dt.astype('int64') // 10**9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis = timestamp_series_sec-timestamp_series_sec.iloc[0]
+    # print(TimeAxis)
+
+    # calculates ratio
+    print("Theta mean:", np.mean(cleaned_df['Theta']))
+    print("LowBeta mean:", np.mean(cleaned_df['LowBeta']))
+    print("The ratio between Theta and LowBeta is:")
+    print(np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta'])))
+    print("Attention mean:", np.mean(cleaned_df['Attention']))
+
+    df['Theta-Beta Ratio'] = (cleaned_df['Theta']) / (cleaned_df['LowBeta'])
+
+    ratio = np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta']))
+    # Create the ratio graph
+    plt.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
+
+    # Add title and axis labels
+    plt.title(f'Theta/LowBeta = {round(ratio, 4)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Theta/LowBeta')
+
+    # Show the graph
+    # plt.show()
+
+    """# **Exploratory Data Analysis**
+    Each feature analysis
+    """
+
+    df['AttentionMean'] = (cleaned_df['Attention'])
+    mean = np.mean(cleaned_df['Attention'])
+    plt.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
+
+    # Add title and axis labels
+    plt.title(f'AttentionMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Attention')
+
+    # Show the graph
+    # plt.show()
+
+    df['MeditationMean'] = (cleaned_df['Meditation'])
+    mean = np.mean(cleaned_df['Meditation'])
+    plt.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
+
+    # Add title and axis labels
+    plt.title(f'MeditationMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Meditation')
+
+    # Show the graph
+    # plt.show()
+
+
+import tkinter as tk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import glob
+
+
+def test_results():
     # Clear
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
                                           text="Back",
                                           width=100,
                                           fg_color='gray',
-                                          font=('consolas', 15),
-                                          )
-                                    # command=new_visit)
+                                          font=('consolas', 15))
     back_button.place(x=10, y=20)
 
+    # Create Matplotlib figure and canvas
+    fig, ((ax1, ax2), (ax3,ax4)) = plt.subplots(2, 2, figsize=(10, 6))
+    fig.delaxes(ax4)
+    today = datetime.datetime.now().strftime("%d-%m-%Y")
+    targetPattern = r""+today+"*test.csv"
+    test_file = glob.glob(targetPattern)[-1]
+    df = pd.read_csv(test_file)
+    df.head()
+    df.info()
+    copy_df = df.copy()
+
+    Timestamp = df["Timestamp"]
+    meanAttention = df["Attention"].mean()
+    meanMeditation = df["Meditation"].mean()
+    meanTheta = df["Theta"].mean()
+    meanLowBeta = df["LowBeta"].mean()
+    # meanHighBeta= df["HighBeta"].mean()
+
+    # df["Timestamp"].fillna(meanTimestamp,inplace=True)
+    df["Attention"].fillna(meanAttention, inplace=True)
+    df["Meditation"].fillna(meanMeditation, inplace=True)
+    df["Theta"].fillna(meanTheta, inplace=True)
+    df["LowBeta"].fillna(meanLowBeta, inplace=True)
+    # df["HighBeta"].fillna(meanHighBeta,inplace=True)
+
+    # delete rows
+    df.drop('Delta', inplace=True, axis=1)
+    df.drop('LowAlpha', inplace=True, axis=1)
+    df.drop('HighAlpha', inplace=True, axis=1)
+    df.drop('HighBeta', inplace=True, axis=1)
+    df.drop('LowGamma', inplace=True, axis=1)
+    df.drop('HighGamma', inplace=True, axis=1)
+
+    # Updated the data form
+    cleaned_df = df
+
+    # Define a Series of timestamps as strings
+    timestamp_series_str = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt = pd.to_datetime(timestamp_series_str, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec = timestamp_series_dt.astype('int64') // 10 ** 9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis = timestamp_series_sec - timestamp_series_sec.iloc[0]
+    # print(TimeAxis)
+
+    # calculates ratio
+    # print("Theta mean:", np.mean(cleaned_df['Theta']))
+    # print("LowBeta mean:", np.mean(cleaned_df['LowBeta']))
+    # print("The ratio between Theta and LowBeta is:")
+    # print(np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta'])))
+    # print("Attention mean:", np.mean(cleaned_df['Attention']))
+
+    df['Theta-Beta Ratio'] = (cleaned_df['Theta']) / (cleaned_df['LowBeta'])
+
+    ratio = np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta']))
+    # Create the ratio graph
+    # plt.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
+
+    # Add title and axis labels
+    plt.title(f'Theta/LowBeta = {round(ratio, 4)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Theta/LowBeta')
+
+    # Show the graph
+    # plt.show()
+
+    """# **Exploratory Data Analysis**
+    Each feature analysis
+    """
+
+    df['AttentionMean'] = (cleaned_df['Attention'])
+    mean = np.mean(cleaned_df['Attention'])
+    # plt.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
+
+    # Add title and axis labels
+    plt.title(f'AttentionMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Attention')
+
+    # Show the graph
+    # plt.show()
+
+    df['MeditationMean'] = (cleaned_df['Meditation'])
+    mean = np.mean(cleaned_df['Meditation'])
+    # plt.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
+
+    # Add title and axis labels
+    plt.title(f'MeditationMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Meditation')
+
+    # Show the graph
+    # plt.show()
+
+
+    ax1.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o',markersize=2, color='b')
+    ax1.set_title(f'Theta/LowBeta = {round(ratio, 4)}')
+    ax1.set_xlabel('Time (min)')
+    ax1.set_ylabel('Theta/LowBeta')
+
+    mean1 = np.mean(df['Meditation'])
+    mean2 = np.mean(df['Attention'])
+    # Add second plot
+    ax2.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o',markersize=2, color='c')
+    ax2.set_title(f'MeditationMean = {round(mean1, 3)}')
+    ax2.set_xlabel('Time (min)')
+    ax2.set_ylabel('Meditation')
+
+    # Add third plot
+    ax3.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o',markersize=2, color='g')
+    ax3.set_title(f'AttentionMean = {round(mean2, 3)}')
+    ax3.set_xlabel('Time (min)')
+    ax3.set_ylabel('Attention')
+
+    fig.subplots_adjust(wspace=0.3, hspace=0.4)  # Adjust space between axes
+
+    canvas = FigureCanvasTkAgg(fig, master=main_frame)
+    canvas.draw()
+
+    # Add toolbar above the first and second plot
+    toolbar = NavigationToolbar2Tk(canvas, main_frame)
+    toolbar.update()
+    toolbar.pack(side=tk.TOP, fill=tk.X)
+
+    # Place the canvas below the toolbar
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+# ////////////////////////////////////////////////DATA///////////////////////////////////////////////////7/
 window = Tk()
 window.title("PowerMind")
 # Set the width and height of the window
 window_width = 1000
-window_height = 680
+window_height = 770
 
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
@@ -927,7 +1232,7 @@ powermind_label = Label(window,
                         font=("consolas", 20))
 powermind_label.pack()
 
-tab_width = int(window_width/3)
+tab_width = int(window_width / 3)
 home_tab = Label(window,
                  text="Home",
 
@@ -948,7 +1253,7 @@ patientinfo_tab = Label(window,
                         bg="#BEBABA",
                         font=("consolas", 20),
                         padx=80)
-patientinfo_tab.place(x=tab_width+tab_width, y=40)
+patientinfo_tab.place(x=tab_width + tab_width, y=40)
 
 home_tab.bind("<Button-1>", home_click)
 patient_tab.bind("<Button-1>", patient_click)

@@ -80,7 +80,7 @@ namespace BrainLinkConnect
             //File.WriteAllText(fileName.ToString() + ".csv", sb.ToString());
             try {
 
-                File.WriteAllText(fileName+"_test.csv", sb.ToString());
+                File.WriteAllText(fileName+"test.csv", sb.ToString());
             }
             catch (IOException e)
             {

@@ -2,7 +2,6 @@ from tkinter import *
 from PIL import Image
 import customtkinter
 from tkinter import messagebox
-import tkinter.simpledialog as sd
 import datetime
 import data_controller as dc
 # import nback as game
@@ -14,20 +13,9 @@ import subprocess
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from pandas.api.types import CategoricalDtype
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report
 from matplotlib import pyplot as plt
-from sklearn import datasets
-from sklearn.tree import DecisionTreeClassifier
-from sklearn import tree
-from sklearn.datasets import load_iris
-from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.model_selection import train_test_split
-import plotly.express as px
 
 # from Alfa.Data.BCI_data import TimeAxis, df, ratio
 
@@ -75,10 +63,25 @@ def save_source(test_summary, attention_level, external_source, doctor_name):
     dc.add_visit(treatment_id, today, visit_type, test_summary, attention_level, external_source, doctor_name)
     show_treatment(treatment_id)
 
-def new_information(visit_id = None, edit = False):
+
+"""
+    page **** External Source ****
+"""
+def new_information(visit_id = None, edit = False, skip = False):
     
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' External Source >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: new_information(skip=True))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' External Source >' == widget.cget('text'):
+            page_found = True
 
     main_frame.grid_rowconfigure((0,1,2,4), weight=0)
     main_frame.grid_rowconfigure(3, weight=1)
@@ -192,9 +195,23 @@ def new_information(visit_id = None, edit = False):
                 show_treatment(treatment_id)))
 
 
-def new_summary(visit_id=None, edit = False):
+"""
+    page **** Summary ****
+"""
+def new_summary(visit_id=None, edit = False, skip = False):
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Summary >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: new_summary(skip=True))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Summary >' == widget.cget('text'):
+            page_found = True
 
     main_frame.grid_rowconfigure((0,1,2,4), weight=0)
     main_frame.grid_rowconfigure(3, weight=1)
@@ -278,10 +295,22 @@ def save_summary(summary, attention_level):
     show_treatment(treatment_id)
 
 
-def new_visit():
+"""
+    page **** new visit ****
+"""
+def new_visit(skip = False):
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' New Visit >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: new_visit(True))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' New Visit >' == widget.cget('text'):
+            page_found = True
     # Back Button
     main_frame.grid_columnconfigure((0,1), weight=1)
     main_frame.grid_columnconfigure((2,3,4), weight=0)
@@ -291,7 +320,7 @@ def new_visit():
                                           text="Back",
                                           width=100,
                                           font=('consolas', 15),
-                                          command=lambda: show_treatment(treatment_id))
+                                          command=lambda: show_treatment(treatment_id, True))
     back_button.grid(row=0, column=0, sticky='W', padx=(20,0), pady=(20,0))
     # p_label = Label(main_frame,
     #                 text='Ada Lovelace',
@@ -341,15 +370,22 @@ def new_visit():
 def close_treatment():
     patientinfo()
 
+def on_row_edit_visit(event):
+    global visit_id
+    row_index = event.widget.grid_info()['row']
+    visit_id = int(data[row_index-1][0])
+    visit = dc.get_visit_by_id(visit_id)
+    open_edit_visit(visit)
 
 def fill_visit(table, data):
     for child in table.winfo_children():
         child.grid_forget()
-    column = ("ID", "treatment_id", "Date", "Visit Type", "Attention Level")
+    column = ("ID", "treatment_id", "Date", "Visit Type", "Attention Level", "Edit")
+    for i in range(len(data)):
+        new_row = list(data[i])
+        new_row.append("Edit Visit")
+        data[i] = new_row
     for col, heading in enumerate(column):
-        width = 12
-        if col == 3:
-            width = 16
         Label(table, text=heading,
               bg="#808080",
               fg='white',
@@ -358,11 +394,11 @@ def fill_visit(table, data):
               pady=10,
               relief="solid",
               highlightbackground='black',
-              width=width,
               font=('Orega One', text_size+3)).grid(row=0, column=col, sticky="nsew")
-
+        table.grid_columnconfigure(col, weight=1)
 
     for row, record in enumerate(data, start=1):
+        labels = []
         for col, value in enumerate(record):
             if col == 3:
                 l = Label(table,
@@ -374,14 +410,25 @@ def fill_visit(table, data):
                         relief="solid",
                         highlightbackground='black',
                         fg='white',
-                        bg='#242424',
-                        width=16)
+                        bg='#242424')
                 l.grid(row=row, column=col, sticky="nsew")
                 l.bind('<Button-1>', on_row_click_visit)
+            elif col == 5:
+                l = Label(table,
+                        text=value,
+                        padx=5,
+                        pady=20,
+                        borderwidth=2,
+                        font=('Orega One', text_size, 'underline'),
+                        relief="solid",
+                        highlightbackground='black',
+                        fg='white',
+                        bg='#242424')
+                l.grid(row=row, column=col, sticky="nsew")
+                l.bind('<Button-1>', on_row_edit_visit)
             else:
                 l = Label(table,
                         text=value,
-                        width=12,
                         padx=5,
                         pady=20,
                         borderwidth=2,
@@ -391,6 +438,10 @@ def fill_visit(table, data):
                         fg='white',
                         bg='#242424')
                 l.grid(row=row, column=col, sticky="nsew")
+            labels.append(l)
+            if col == 5 or col == 3:
+                l.bind('<Enter>', lambda e, labels=labels: on_enter(labels))
+                l.bind('<Leave>', lambda e, labels=labels: on_leave(labels))
 
 def on_row_click_visit(event):
     global visit_id, visit_data
@@ -409,10 +460,24 @@ def filter_visit(*args):
     visit_data = dc.get_visits(treatment_id=treatment_id, filter=var_visitfilter.get(), col_filter=var_visitoption.get())
     fill_visit(table_visit, visit_data)
 
-def show_treatment(treatment_id):
+"""
+    page **** Visit ****
+"""
+def show_treatment(treatment_id, skip = False):
     global start_date_open, end_date_open, table_visit, visit_data
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Visits >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: show_treatment(treatment_id, True))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Visits >' == widget.cget('text'):
+            page_found = True
     
     main_frame.grid_columnconfigure((0,2,3,4), weight=0)
     main_frame.grid_columnconfigure(1, weight=1)
@@ -449,8 +514,8 @@ def show_treatment(treatment_id):
     customtkinter.CTkOptionMenu(frm, values=["ID", "Date", "Visit Type", "Attention Level"], variable=var_visitoption, command=filter_visit).pack(side='left', padx=10)
     visit_data = dc.get_visits(treatment_id)
     # new_id, name, treatment_id, date, summary, attention_level, external_source
-    table_visit = customtkinter.CTkScrollableFrame(main_frame, orientation='vertical', fg_color='#2b2b2b', width=1330)
-    table_visit.grid(row=4, column=1, sticky='NSW', padx=(0,50), pady=(0,20))
+    table_visit = customtkinter.CTkScrollableFrame(main_frame, orientation='vertical', fg_color='#2b2b2b')
+    table_visit.grid(row=4, column=1, sticky='NSEW', padx=(0,50), pady=(0,20))
     #table_visit.grid_columnconfigure((0,1,2,3,4,5), weight=1)
     fill_visit(table_visit, visit_data)
     
@@ -585,7 +650,7 @@ def show_treatment(treatment_id):
     summary_text_area.insert("1.0", current_treatment[-1])
 
     bottom_frame = customtkinter.CTkFrame(master=main_frame, fg_color='#2b2b2b')
-    bottom_frame.grid(row=5, column=0, columnspan=2, pady=(0, 15), sticky='EW')
+    bottom_frame.grid(row=5, column=0, columnspan=2, pady=(15, 15), sticky='EW')
 
     new_visit_butt = customtkinter.CTkButton(master=bottom_frame,
                                              text="New Visit",
@@ -593,11 +658,13 @@ def show_treatment(treatment_id):
                                              command=new_visit)
     new_visit_butt.pack(expand=True, side='left')
 
+    """
     edit_visit_butt = customtkinter.CTkButton(master=bottom_frame,
                                              text="Edit Visit",
                                              height=50,
                                              command=edit_visit)
     edit_visit_butt.pack(expand=True, side='left')
+    """
 
     delete_visit_butt = customtkinter.CTkButton(master=bottom_frame,
                                              text="Delete Visit",
@@ -708,6 +775,16 @@ def on_row_click_patient(event):
     patient_id = int(data[row_index-1][0])
     patientinfo_click()
     # patientinfo()
+
+def on_row_edit_patient(event):
+    global edit_patient_window
+    row_index = event.widget.grid_info()['row']
+    patient_id = int(data[row_index-1][0])
+    patient = dc.get_patient_by_id(patient_id)
+    if not add_patient_opened:
+        edit_patient_opened = True
+        edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], birth_date=patient[3], mode='edit')
+    window.after(100, edit_patient_window.focus)
 
 
 def on_row_click_treatment(event):
@@ -845,12 +922,26 @@ def new_treatment(patient_id):
 """
 
 
-def start_test():
+"""
+    page **** Test ****
+"""
+def start_test(skip = False):
 
     subprocess.Popen(["BrainLinkConnect/bin/Release/BrainLinkConnect.exe"])
     # Clear
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: start_test(skip=True))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Test >' == widget.cget('text'):
+            page_found = True
     
     main_frame.grid_columnconfigure((0), weight=1)
     main_frame.grid_columnconfigure((1,2,3,4), weight=0)
@@ -936,11 +1027,19 @@ def start_test():
     # off_label.bind("<Button-1>", on_off)
 
 
-# Openning screen of the system itself , under the tab "Home"
-def home():
+
+"""
+    page **** home *****
+"""
+def home(event = None):
+    for widgets in frame_breadcrumbs.winfo_children():
+        widgets.destroy()
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
+    l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Home >', font=("consolas", breadcrumbs_size))
+    l.pack(side='left')
+    l.bind('<Button-1>', home_click)
     text = '''
 Nowadays we can see that there are various methods for conducting a preliminary diagnosis in order to identify ADHD, \n such as cognitive tests, testing biological measures and using brain wave technologies such as BCI.
 
@@ -966,11 +1065,22 @@ def filter_patient(*args):
     data = dc.get_patients(var_filter.get(), var_patientoption.get())
     fill_patients(table_patient, data)
 
+def on_enter(labels):
+    for label in labels:
+        label.config(bg="#2752D6")
+
+def on_leave(labels):
+    for label in labels:
+        label.config(bg='#242424')
 
 def fill_patients(table, data):
     for child in table.winfo_children():
         child.grid_forget()
-    column = ("ID", "First Name", "Last Name", "Date of Birth")
+    column = ("ID", "First Name", "Last Name", "Date of Birth", "Edit")
+    for i in range(len(data)):
+        new_row = list(data[i])
+        new_row.append('Edit Patient')
+        data[i] = new_row
     for col, heading in enumerate(column):
         Label(table,
               text=heading,
@@ -984,28 +1094,66 @@ def fill_patients(table, data):
               font=('Orega One', text_size+3)).grid(row=0, column=col, sticky="nsew")
 
     for row, record in enumerate(data, start=1):
+        labels = []
         for col, value in enumerate(record):
-            label = Label(table,
-              text=value,
-              padx=40,
-              pady=30,
-              borderwidth=2,
-              font=('Orega One', text_size),
-              relief="solid",
-              highlightbackground='black',
-              fg='white',
-              bg='#242424')
+            if col == 4 or col == 1:
+                label = Label(table,
+                    text=value,
+                    padx=40,
+                    pady=30,
+                    borderwidth=2,
+                    font=('Orega One', text_size, 'underline'),
+                    relief="solid",
+                    highlightbackground='black',
+                    fg='white',
+                    bg='#242424')
 
-            table.grid_columnconfigure(col, weight=1)
-            table.grid_rowconfigure(row, weight=1)
-            label.grid(row=row, column=col, sticky="nsew")
-            label.bind("<Button-1>", on_row_click_patient)
+                table.grid_columnconfigure(col, weight=1)
+                table.grid_rowconfigure(row, weight=1)
+                label.grid(row=row, column=col, sticky="nsew")
+                label.bind("<Button-1>", on_row_click_patient)
+            else:
+                label = Label(table,
+                text=value,
+                padx=40,
+                pady=30,
+                borderwidth=2,
+                font=('Orega One', text_size),
+                relief="solid",
+                highlightbackground='black',
+                fg='white',
+                bg='#242424')
+
+                table.grid_columnconfigure(col, weight=1)
+                table.grid_rowconfigure(row, weight=1)
+                label.grid(row=row, column=col, sticky="nsew")
+                label.bind("<Button-1>", on_row_click_patient)
+            labels.append(label)
+            if col == 4 or col == 1:
+                label.bind('<Enter>', lambda e, labels=labels:on_enter(labels))
+                label.bind('<Leave>', lambda e, labels=labels:on_leave(labels))
+            if col == 4:
+                label.bind("<Button-1>", on_row_edit_patient)
 
 
-def patient():
+"""
+    page **** Patient ****
+"""
+def patient(event = None):
     global data, var_filter, var_patientoption, table_patient
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Patient >', font=("consolas", breadcrumbs_size))
+    l.pack(side='left')
+    l.bind('<Button-1>', patient_click)
+
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Patient >' == widget.cget('text'):
+            page_found = True
 
     data = dc.get_patients()
     frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
@@ -1037,6 +1185,7 @@ def patient():
                                                  command=delete_patient)
     delete_patient_button.pack(expand=True, side='left')
 
+    """
     edit_patient_button = customtkinter.CTkButton(master=frm,
                                                  text='Edit Patient',
                                                  font=("consolas",
@@ -1044,6 +1193,7 @@ def patient():
                                                  height=50,
                                                  command=edit_patient)
     edit_patient_button.pack(expand=True, side='left')
+    """
 
 def edit_patient():
     global edit_patient_opened, edit_patient_window
@@ -1164,7 +1314,11 @@ def filter_treatment(*args):
 def fill_treatments(table, data):
     for child in table.winfo_children():
         child.grid_forget()
-    column = ("Treatment ID", "Treatment Name", "Patient ID", "Start Date", "End Date", "Summary")
+    column = ("Treatment ID", "Treatment Name", "Patient ID", "Start Date", "End Date", "Summary", "Edit")
+    for i in range(len(data)):
+        new_row = list(data[i])
+        new_row.append('Edit Treatment')
+        data[i] = new_row
     for col, heading in enumerate(column):
         Label(table,
               text=heading,
@@ -1179,10 +1333,24 @@ def fill_treatments(table, data):
         table.grid_columnconfigure(col, weight=1)
 
     for row, record in enumerate(data, start=1):
+        labels = []
         table.grid_rowconfigure(row, weight=1)
         for col, value in enumerate(record):
             # If name of treatment (col 0)
-            if col == 1:
+            if col == 6:
+                info = Label(table,
+              text=value,
+              padx=40,
+              pady=30,
+              borderwidth=2,
+              font=('Orega One', text_size, "underline"),
+              relief="solid",
+              highlightbackground='black',
+              fg='white',
+              bg='#242424')
+                info.grid(row=row, column=col, sticky="nsew")
+                info.bind("<Button-1>", on_row_edit_treatment)
+            elif col == 1:
                 info = Label(table,
               text=value,
               padx=40,
@@ -1195,20 +1363,6 @@ def fill_treatments(table, data):
               bg='#242424')
                 info.grid(row=row, column=col, sticky="nsew")
                 info.bind('<Button-1>', on_row_click_treatment)
-            # Delete
-            # elif value == "Delete":
-            #     info = Label(table,
-            #                  text=value,
-            #                  font=("consolas", 15, "underline"),
-            #                  padx=20,
-            #                  pady=15,
-            #                  borderwidth=2,
-            #                  relief="groove",
-            #                  cursor="hand2"
-            #                  )
-            #     info.grid(row=row, column=col, sticky="nsew")
-            #     # bind Delete Button
-            #     # info.bind('<Button-1>', on_row_click)
             else:
                 info = Label(table,
               text=value,
@@ -1221,11 +1375,38 @@ def fill_treatments(table, data):
               fg='white',
               bg='#242424')
                 info.grid(row=row, column=col, sticky="nsew")
+            labels.append(info)
+            if col == 1 or col == 6:
+                info.bind('<Enter>', lambda e, labels=labels:on_enter(labels))
+                info.bind('<Leave>', lambda e, labels=labels:on_leave(labels))
 
-def patientinfo():
+def on_row_edit_treatment(event):
+    global edit_treatment_window, add_treatment_opened
+    row_index = event.widget.grid_info()['row']
+    treatment_id = int(data[row_index-1][0])
+    treatment = dc.get_treatment_by_id(treatment_id)
+    edit_treatment_window = TreatmentWindow(treatment_id=treatment[0], patient_id=treatment[2], treatment_name=treatment[1], 
+                start_date=treatment[3], end_date=treatment[4], summary=treatment[5])
+    window.after(100, edit_treatment_window.focus)
+
+
+"""
+    page **** Treatment ****
+"""
+def patientinfo(event = None):
     global treatment_data, patient_id, var_treatmentfilter, var_treatmentoption, table_treatment
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+
+    l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Patient Info >', font=("consolas", breadcrumbs_size))
+    l.pack(side='left')
+    l.bind('<Button-1>', patientinfo_click)
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Patient Info >' == widget.cget('text'):
+            page_found = True
     current_patient = dc.get_patient_by_id(patient_id)
     main_frame.grid_columnconfigure(0, weight=1)
     main_frame.grid_columnconfigure((1,2,3,4), weight=0)
@@ -1276,6 +1457,7 @@ def patientinfo():
                                                  command=delete_treatment)
     delete_treatment_button.pack(expand=True, side='left')
 
+    """
     edit_treatment_button = customtkinter.CTkButton(master=frm,
                                                  text='Edit Treatment',
                                                  font=("consolas",
@@ -1283,6 +1465,7 @@ def patientinfo():
                                                  height=50,
                                                  command=edit_treatment)
     edit_treatment_button.pack(expand=True, side='left')
+    """
 
 
 def add_treatment(treatment_name, patient_id, start_date, end_date, summary):
@@ -1399,7 +1582,6 @@ def edit_treatment():
         if not treatment:
             messagebox.showerror('Error', 'ID of treatment not found.')
         else:
-            print(f"{edit_treatment_visible = }")
             if not edit_treatment_visible:
                 edit_treatment_visible = True
                 edit_treatment_window = TreatmentWindow(treatment_id=treatment[0], patient_id=treatment[2], treatment_name=treatment[1], 
@@ -1686,21 +1868,21 @@ y = (screen_height // 2) - (window_height // 2)
 window.geometry('{}x{}+{}+{}'.format(window_width, window_height, x, y))
 
 
-def home_click():
+def home_click(event = None):
     home_tab.configure(fg_color="#2752D6", state='disabled')
     patient_tab.configure(fg_color="#1f6aa5", state='normal')
     patientinfo_tab.configure(fg_color="#1f6aa5", state='normal')
     home()
 
 
-def patient_click():
+def patient_click(event = None):
     home_tab.configure(fg_color="#1f6aa5", state='normal')
     patient_tab.configure(fg_color="#2752D6", state='disabled')
     patientinfo_tab.configure(fg_color="#1f6aa5", state='normal')
     patient()
 
 
-def patientinfo_click():
+def patientinfo_click(event = None):
     global patient_id
     if not patient_id:
         messagebox.showerror('Error', 'No patient selected. Please select a patient from the table first.')
@@ -1712,13 +1894,16 @@ def patientinfo_click():
 
 
 window.grid_columnconfigure((0,1,2), weight=1)
-window.grid_rowconfigure(2, weight=1)
+window.grid_rowconfigure(3, weight=1)
 
 customtkinter.set_appearance_mode('dark') # set theme to dark regardless of system preferences
 patient_id = None
+image = Image.open('images/icon.png')
 powermind_label = customtkinter.CTkLabel(window,
+                        compound='left',
                         text="PowerMind",
-                        font=("consolas", 20))
+                        font=("consolas", 20),
+                        image=customtkinter.CTkImage(light_image=image, size=(70,50)))
 powermind_label.grid(row=0, column=1, sticky='EW')
 
 tab_width = int(window_width / 3)
@@ -1747,10 +1932,14 @@ patientinfo_tab = customtkinter.CTkButton(window,
                         command=patientinfo_click)
 patientinfo_tab.grid(row=1, column=2, sticky='EW', padx=15, pady=5)
 
+frame_breadcrumbs = customtkinter.CTkFrame(window, fg_color='#242424',
+                   )
+frame_breadcrumbs.grid(row=2, column=0, columnspan=3, pady=10, sticky='W', padx=30)
+breadcrumbs_size = 25
 
 main_frame = customtkinter.CTkFrame(window
                    )
-main_frame.grid(row=2, column=0, columnspan=3, sticky='NSEW')
+main_frame.grid(row=3, column=0, columnspan=3, sticky='NSEW')
 
 text_size = 22
 home()

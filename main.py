@@ -76,6 +76,8 @@ def new_information(visit_id = None, edit = False, skip = False):
         l = customtkinter.CTkLabel(frame_breadcrumbs, text=' External Source >', font=("consolas", breadcrumbs_size))
         l.pack(side='left')
         l.bind('<Button-1>', lambda e: new_information(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
@@ -206,6 +208,8 @@ def new_summary(visit_id=None, edit = False, skip = False):
         l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Summary >', font=("consolas", breadcrumbs_size))
         l.pack(side='left')
         l.bind('<Button-1>', lambda e: new_summary(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
@@ -305,6 +309,8 @@ def new_visit(skip = False):
         l = customtkinter.CTkLabel(frame_breadcrumbs, text=' New Visit >', font=("consolas", breadcrumbs_size))
         l.pack(side='left')
         l.bind('<Button-1>', lambda e: new_visit(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
@@ -457,8 +463,135 @@ def on_row_click_visit(event):
 
 def filter_visit(*args):
     global treatment_id, visit_data
-    visit_data = dc.get_visits(treatment_id=treatment_id, filter=var_visitfilter.get(), col_filter=var_visitoption.get())
+    visit_data = dc.get_visits(treatment_id=treatment_id, filter=var_visitfilter.get(), 
+        col_filter=var_visitoption.get(), sort=var_visitsort.get())
     fill_visit(table_visit, visit_data)
+
+
+def test1_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=results_page).grid(row=1, column=0, pady=15)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test 1 >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: test1_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    """window = customtkinter.CTkToplevel()
+    window.geometry("500x500")
+    window.title('Test 1')
+    frm = customtkinter.CTkScrollableFrame(window)
+    frm.pack(expand=True, fill='both')
+    window.after(100, window.focus)"""
+
+
+def test2_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=results_page).grid(row=1, column=0, pady=15)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test 2 >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: test2_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    """window = customtkinter.CTkToplevel()
+    window.geometry("500x500")
+    window.title('Test 2')
+    frm = customtkinter.CTkScrollableFrame(window)
+    frm.pack(expand=True, fill='both')
+    window.after(100, window.focus)"""
+
+
+def test3_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=results_page).grid(row=1, column=0, pady=15)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test 3 >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: test3_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    """window = customtkinter.CTkToplevel()
+    window.geometry("500x500")
+    window.title('Test 3')
+    frm = customtkinter.CTkScrollableFrame(window)
+    frm.pack(expand=True, fill='both')
+    window.after(100, window.focus)"""
+
+
+def test4_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=results_page).grid(row=1, column=0, pady=15)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test 4 >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: test4_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    """window = customtkinter.CTkToplevel()
+    window.geometry("500x500")
+    window.title('Test 4')
+    frm = customtkinter.CTkScrollableFrame(window)
+    frm.pack(expand=True, fill='both')
+    window.after(100, window.focus)"""
+
+"""
+    page **** Summary Results ****
+"""
+def results_page(skip = False):
+    global treatment_id
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Tests >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: results_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Tests >' == widget.cget('text'):
+            page_found = True
+    main_frame.grid_columnconfigure((2,3,4), weight=0)
+    main_frame.grid_columnconfigure((0, 1), weight=1)
+    main_frame.grid_rowconfigure((0,3,4), weight=0)
+    main_frame.grid_rowconfigure((1,2), weight=1)
+    customtkinter.CTkLabel(main_frame, text='Summary results', font=("consolas", 25, "underline")).grid(row=0, column=0, columnspan=2, sticky='EW', pady=10)
+    customtkinter.CTkButton(main_frame, text='Test 1', font=("consolas bold", 25), command=test1_page).grid(row=1, column=0, ipadx=50, ipady=50)
+    customtkinter.CTkButton(main_frame, text='Test 2', font=("consolas bold", 25), command=test2_page).grid(row=1, column=1, ipadx=50, ipady=50)
+    customtkinter.CTkButton(main_frame, text='Test 3', font=("consolas bold", 25), command=test3_page).grid(row=2, column=0, ipadx=50, ipady=50)
+    customtkinter.CTkButton(main_frame, text='Test 4', font=("consolas bold", 25), command=test4_page).grid(row=2, column=1, ipadx=50, ipady=50)
+    customtkinter.CTkButton(main_frame, text='Back', font=("consolas bold", 25), command=lambda:show_treatment(treatment_id)).grid(row=3, column=0, columnspan=2, pady=15)
 
 """
     page **** Visit ****
@@ -469,14 +602,16 @@ def show_treatment(treatment_id, skip = False):
         widgets.destroy()
 
     if not skip:
-        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Visits >', font=("consolas", breadcrumbs_size))
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Treatment >', font=("consolas", breadcrumbs_size))
         l.pack(side='left')
         l.bind('<Button-1>', lambda e: show_treatment(treatment_id, True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
             widget.destroy()
-        if ' Visits >' == widget.cget('text'):
+        if ' Treatment >' == widget.cget('text'):
             page_found = True
     
     main_frame.grid_columnconfigure((0,2,3,4), weight=0)
@@ -497,6 +632,8 @@ def show_treatment(treatment_id, skip = False):
                     font=("consolas", 20))
     treat_label.grid(row=1, column=0, padx=(80,0), sticky='W', pady=(0,25))
 
+    customtkinter.CTkButton(main_frame, text='results', font=("consolas", 20), command=results_page).grid(row=0, rowspan=2, column=1, padx=(0,60), sticky='E')
+
     # treat_label = Label(main_frame,
     #                     text=treatment_id,
     #                     font=("consolas", 15, "underline"))
@@ -508,11 +645,14 @@ def show_treatment(treatment_id, skip = False):
     p_label.grid(row=2, column=1, sticky='W', padx=(25,0))
 
     frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
-    frm.grid(row=3, column=1, pady=(20,10), padx=50)
-    customtkinter.CTkEntry(frm, textvariable=var_visitfilter).pack(side='left', padx=10)
+    frm.grid(row=3, column=1, pady=(20,10), padx=(0, 50), sticky='EW')
+    customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20))
+    customtkinter.CTkEntry(frm, textvariable=var_visitfilter, width=200).pack(side='left', padx=10)
     var_visitfilter.trace_add('write', filter_visit)
     customtkinter.CTkOptionMenu(frm, values=["ID", "Date", "Visit Type", "Attention Level"], variable=var_visitoption, command=filter_visit).pack(side='left', padx=10)
-    visit_data = dc.get_visits(treatment_id)
+    customtkinter.CTkOptionMenu(frm, values=["ID", "Date", "Visit Type", "Attention Level"], variable=var_visitsort, command=filter_visit).pack(side='right', padx=10)
+    customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
+    visit_data = dc.get_visits(treatment_id, sort=var_visitsort.get())
     # new_id, name, treatment_id, date, summary, attention_level, external_source
     table_visit = customtkinter.CTkScrollableFrame(main_frame, orientation='vertical', fg_color='#2b2b2b')
     table_visit.grid(row=4, column=1, sticky='NSEW', padx=(0,50), pady=(0,20))
@@ -537,9 +677,9 @@ def show_treatment(treatment_id, skip = False):
             start_date_open = True
 
         cal_frame = customtkinter.CTkFrame(start_frame, fg_color='#2b2b2b')
-        cal_frame.pack(pady=(5,0))
-        cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
-        cal.pack()
+        cal_frame.pack(pady=(5,0), fill='both', expand=True)
+        cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20, font='consolas 15')
+        cal.pack(fill='both', expand=True, padx=20, pady=10)
 
         select_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Select",
@@ -570,9 +710,9 @@ def show_treatment(treatment_id, skip = False):
             end_date_open = True
 
         cal_frame = customtkinter.CTkFrame(end_frame, fg_color='#2b2b2b')
-        cal_frame.pack(pady=(5,0))
-        cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20)
-        cal.pack()
+        cal_frame.pack(pady=(5,0), fill='both', expand=True)
+        cal = Calendar(cal_frame, selectmode="day", year=2023, month=3, day=20, font='consolas 15')
+        cal.pack(fill='both', expand=True, padx=20, pady=10)
 
         select_butt = customtkinter.CTkButton(master=cal_frame,
                                               text="Select",
@@ -594,7 +734,7 @@ def show_treatment(treatment_id, skip = False):
     start_frame.pack()
     start_label = customtkinter.CTkLabel(start_frame,
                         text='Start Treatment',
-                        font=("consolas", 15))
+                        font=("consolas", 25))
     start_label.pack()
 
     date_img = PhotoImage(file="images/dateicon.png")
@@ -603,7 +743,7 @@ def show_treatment(treatment_id, skip = False):
                             text="d/mm/yy\t\t\t",
                             image=date_img,
                             compound="right",
-                            font=('Orega One', 15),
+                            font=('Orega One', 25),
                             fg='white',
                             bg='#242424',
                             anchor="w",
@@ -620,14 +760,14 @@ def show_treatment(treatment_id, skip = False):
 
     end_label = customtkinter.CTkLabel(end_frame,
                       text='End Treatment',
-                      font=("consolas", 15))
+                      font=("consolas", 25))
     end_label.pack()
 
     end_date_label = Label(end_frame,
                            text="d/mm/yy\t\t\t",
                            image=date_img,
                            compound="right",
-                           font=('Orega One', 15),
+                           font=('Orega One', 25),
                            fg='white',
                            bg='#242424',
                            anchor="w",
@@ -641,7 +781,7 @@ def show_treatment(treatment_id, skip = False):
     end_date_label.config(text=f'{current_treatment[4]}\t\t\t')
     summary_label = customtkinter.CTkLabel(left_frame,
                           text='Summary',
-                          font=("consolas", 15))
+                          font=("consolas", 25))
     summary_label.pack()
 
     summary_text_area = customtkinter.CTkTextbox(master=left_frame,
@@ -684,10 +824,17 @@ def delete_visit():
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
-    elif dc.remove_visit(int(text)):
-        show_treatment(treatment_id)
     else:
-        messagebox.showerror('Error', 'ID of visit not found.')
+        visits = dc.get_visits(treatment_id, sort=var_visitsort.get())
+        name = ''
+        for item in visits:
+            if item[0] == int(text) and item[1] == treatment_id:
+                name = f"{item[3]}"
+                break
+        if not name:
+            messagebox.showerror('Error', 'ID of Visit not found.')
+        elif messagebox.askyesno('Delete Visit', f'Are you sure you want to delete the visit with type {name}?') and dc.remove_visit(int(text)):
+            show_treatment(treatment_id)
 
 
 def update_visit(visit_id, visit_name, visit_date, summary, attention_level, external_source):
@@ -783,7 +930,7 @@ def on_row_edit_patient(event):
     patient = dc.get_patient_by_id(patient_id)
     if not add_patient_opened:
         edit_patient_opened = True
-        edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], birth_date=patient[3], mode='edit')
+        edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], birth_date=patient[3], phone=patient[4], email=patient[5], mode='edit')
     window.after(100, edit_patient_window.focus)
 
 
@@ -936,6 +1083,8 @@ def start_test(skip = False):
         l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test >', font=("consolas", breadcrumbs_size))
         l.pack(side='left')
         l.bind('<Button-1>', lambda e: start_test(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
@@ -1032,6 +1181,11 @@ def start_test(skip = False):
     page **** home *****
 """
 def home(event = None):
+    create_menu('home')
+    try:
+        label_menu.destroy()
+    except:
+        pass
     for widgets in frame_breadcrumbs.winfo_children():
         widgets.destroy()
     for widgets in main_frame.winfo_children():
@@ -1040,6 +1194,12 @@ def home(event = None):
     l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Home >', font=("consolas", breadcrumbs_size))
     l.pack(side='left')
     l.bind('<Button-1>', home_click)
+    l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+    l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    doc = dc.get_doctor()
+    f = customtkinter.CTkFrame(main_frame)
+    f.pack(fill='x')
+    customtkinter.CTkLabel(f, text=f'Hello Doctor {doc[1]}', font=('consolas', 20)).grid(row=0, column=0, padx=15, pady=5)
     text = '''
 Nowadays we can see that there are various methods for conducting a preliminary diagnosis in order to identify ADHD, \n such as cognitive tests, testing biological measures and using brain wave technologies such as BCI.
 
@@ -1062,16 +1222,22 @@ In addition to the current issues that have been mentioned there is another prob
 
 
 def filter_patient(*args):
-    data = dc.get_patients(var_filter.get(), var_patientoption.get())
+    data = dc.get_patients(filter=var_filter.get(), col_filter=var_patientoption.get(), sort=var_patientsort.get())
     fill_patients(table_patient, data)
 
 def on_enter(labels):
     for label in labels:
-        label.config(bg="#2752D6")
+        try:
+            label.configure(bg="#2752D6")
+        except:
+            label.configure(bg_color="#2752D6")
 
 def on_leave(labels):
     for label in labels:
-        label.config(bg='#242424')
+        try:
+            label.configure(bg='#242424')
+        except:
+            label.configure(bg_color="#242424")
 
 def fill_patients(table, data):
     for child in table.winfo_children():
@@ -1079,6 +1245,8 @@ def fill_patients(table, data):
     column = ("ID", "First Name", "Last Name", "Date of Birth", "Edit")
     for i in range(len(data)):
         new_row = list(data[i])
+        new_row.pop()
+        new_row.pop()
         new_row.append('Edit Patient')
         data[i] = new_row
     for col, heading in enumerate(column):
@@ -1095,6 +1263,7 @@ def fill_patients(table, data):
 
     for row, record in enumerate(data, start=1):
         labels = []
+        record = list(record)
         for col, value in enumerate(record):
             if col == 4 or col == 1:
                 label = Label(table,
@@ -1136,17 +1305,47 @@ def fill_patients(table, data):
                 label.bind("<Button-1>", on_row_edit_patient)
 
 
+menu_opened = False
+def open_menu(label_menu):
+    global menu_opened
+    menu_opened = True
+    label_menu.configure(image=customtkinter.CTkImage(light_image=Image.open('images/close.png')))
+    label_menu.bind('<Button-1>', lambda e: close_menu(label_menu))
+    frm_menu.grid(row=1, rowspan=3, column=0, sticky='NSEW', padx=20, pady=20)
+
+def close_menu(label_menu):
+    global menu_opened
+    menu_opened = False
+    label_menu.configure(image=customtkinter.CTkImage(light_image=Image.open('images/menu.png')))
+    label_menu.bind('<Button-1>', lambda e: open_menu(label_menu))
+    frm_menu.grid_forget()
+
 """
     page **** Patient ****
 """
 def patient(event = None):
-    global data, var_filter, var_patientoption, table_patient
+    global data, var_filter, var_patientoption, table_patient, label_home, label_menu, menu_opened
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
+    create_menu('patient')
+    try:
+        label_menu.destroy()
+    except:
+        pass
+    if not menu_opened:
+        label_menu = customtkinter.CTkLabel(window, image=customtkinter.CTkImage(light_image=Image.open('images/menu.png'), 
+                size=(25,25)), text='')
+        label_menu.bind('<Button-1>', lambda e: open_menu(label_menu))
+    else:
+        label_menu = customtkinter.CTkLabel(window, image=customtkinter.CTkImage(light_image=Image.open('images/close.png'), 
+                size=(25,25)), text='')
+        label_menu.bind('<Button-1>', lambda e: close_menu(label_menu))
+    label_menu.grid(row=0, column=0, padx=(15,0), pady=5, sticky='W')
     l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Patient >', font=("consolas", breadcrumbs_size))
     l.pack(side='left')
     l.bind('<Button-1>', patient_click)
+    l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+    l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
 
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
@@ -1155,12 +1354,15 @@ def patient(event = None):
         if ' Patient >' == widget.cget('text'):
             page_found = True
 
-    data = dc.get_patients()
+    data = dc.get_patients(sort=var_patientsort.get())
     frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
-    frm.pack(pady=(50,10), padx=50)
-    customtkinter.CTkEntry(frm, textvariable=var_filter).pack(side='left', padx=10)
+    frm.pack(pady=(50,10), padx=50, fill='x')
+    customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20)).pack(side='left', padx=10)
+    customtkinter.CTkEntry(frm, textvariable=var_filter, width=200).pack(side='left', padx=10)
     var_filter.trace_add('write', filter_patient)
     customtkinter.CTkOptionMenu(frm, values=['ID', 'First Name', 'Last Name', 'Date of Birth'], variable=var_patientoption, command=filter_patient).pack(side='left', padx=10)
+    customtkinter.CTkOptionMenu(frm, values=['ID', 'First Name', 'Last Name', 'Date of Birth'], variable=var_patientsort, command=filter_patient).pack(side='right', padx=10)
+    customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
     table_patient = customtkinter.CTkScrollableFrame(main_frame)
     table_patient.pack(expand=True, fill='both', padx=50, pady=(0,50))
 
@@ -1211,14 +1413,14 @@ def edit_patient():
                 edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], birth_date=patient[3], mode='edit')
             window.after(100, edit_patient_window.focus)
 
-def confirm_edit_patient(patient_id, first_name, last_name, birth_date):
+def confirm_edit_patient(patient_id, first_name, last_name, phone, email, birth_date):
     global edit_patient_window
     if not first_name or not last_name:
         messagebox.showerror('Error', 'Please enter all the information of the patient.', master=edit_patient_window)
         edit_patient_window.focus()
     else:
         new_date = datetime.datetime.strptime(birth_date, "%m/%d/%y").strftime("%m/%d/%Y")
-        dc.update_patient(patient_id, first_name, last_name, new_date)
+        dc.update_patient(patient_id, first_name, last_name, phone, email, new_date)
         close_patient(edit_patient_window, 'edit')
         patient()
 
@@ -1227,10 +1429,17 @@ def delete_patient():
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
-    elif dc.remove_patient(int(text)):
-        patient()
     else:
-        messagebox.showerror('Error', 'ID of patient not found.')
+        patients = dc.get_patients(sort=var_patientsort.get())
+        name = ''
+        for item in patients:
+            if item[0] == int(text):
+                name = f"{item[1]} {item[2]}"
+                break
+        if not name:
+            messagebox.showerror('Error', 'ID of patient not found.')
+        elif messagebox.askyesno('Delete Patient', f'Are you sure you want to delete the patient {name}?') and dc.remove_patient(int(text)):
+            patient()
 
 def close_patient(window, mode = 'add'):
     global add_patient_opened, edit_patient_opened
@@ -1241,10 +1450,11 @@ def close_patient(window, mode = 'add'):
     window.destroy()
 
 class PatientWindow(customtkinter.CTkToplevel):
-    def __init__(self, first_name = None, last_name = None, birth_date = None, mode = 'add', patient_id = None,*args, **kwargs):
+    def __init__(self, first_name = None, last_name = None, phone = None, email = None, birth_date = None, mode = 'add', patient_id = None,*args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title('Patient')
-        self.protocol("WM_DELETE_WINDOW", lambda:close_patient(self, mode)) 
+        self.protocol("WM_DELETE_WINDOW", lambda:close_patient(self, mode))
+        self.geometry("500x450")
         self.resizable(False, False)  
         label_first_name = customtkinter.CTkLabel(self, text="First Name:")
         label_first_name.grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -1259,21 +1469,41 @@ class PatientWindow(customtkinter.CTkToplevel):
         self.entry_last_name = customtkinter.CTkEntry(self)
         self.entry_last_name.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
+        label_phone = customtkinter.CTkLabel(self, text="Phone Number:")
+        label_phone.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+
+        self.entry_phone = customtkinter.CTkEntry(self)
+        self.entry_phone.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+
+        label_email = customtkinter.CTkLabel(self, text="Email:")
+        label_email.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+
+        self.entry_email = customtkinter.CTkEntry(self)
+        self.entry_email.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+
         # create a label and entry for the date of birth
         label_dob = customtkinter.CTkLabel(self, text="Date of Birth:")
-        label_dob.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        label_dob.grid(row=4, column=0, padx=10, pady=10, sticky="w")
 
-        self.cal = Calendar(self, selectmode="day", year=2000, month=1, day=1)
-        self.cal.grid(row=2, column=1, padx=10, pady=10, sticky="e")
+        self.cal = Calendar(self, selectmode="day", year=2000, month=1, day=1, font='consolas 15')
+        self.cal.grid(row=4, column=1, padx=10, pady=10, sticky="NSEW")
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(4, weight=1)
         if first_name:
             self.entry_first_name.insert(0, first_name)
             self.entry_last_name.insert(0, last_name)
+            if phone:
+                self.entry_phone.insert(0, phone)
+            if email:
+                self.entry_email.insert(0, email)
             self.cal.selection_set(birth_date)
         self.submit_button = customtkinter.CTkButton(self, 
             text='Submit', 
             command=lambda:submit_patient(
                 self.entry_first_name.get(), 
                 self.entry_last_name.get(),
+                self.entry_phone.get(),
+                self.entry_email.get(),
                 self.cal.get_date()
             ))
         if mode == 'edit':
@@ -1281,9 +1511,11 @@ class PatientWindow(customtkinter.CTkToplevel):
                 patient_id=patient_id,
                 first_name=self.entry_first_name.get(),
                 last_name=self.entry_last_name.get(),
+                phone=self.entry_phone.get(),
+                email=self.entry_email.get(),
                 birth_date=self.cal.get_date()
             ))
-        self.submit_button.grid(row=3, column=0, columnspan=2, padx=20, pady=15, sticky="s")
+        self.submit_button.grid(row=5, column=0, columnspan=2, padx=20, pady=15, sticky="s")
 
 
 add_patient_opened = add_patient_window = edit_patient_opened = edit_patient_window = False
@@ -1295,20 +1527,21 @@ def add_patient():
     window.after(100, add_patient_window.focus)
 
 
-def submit_patient(first_name, last_name, birth_date):
+def submit_patient(first_name, last_name, phone, email, birth_date):
     global add_patient_window
     if not first_name or not last_name:
         messagebox.showerror('Error', 'Please enter all the information of the patient.', master=add_patient_window)
         add_patient_window.focus()
     else:
         new_date = datetime.datetime.strptime(birth_date, "%m/%d/%y").strftime("%m/%d/%Y")
-        dc.add_patient(first_name, last_name, new_date)
+        dc.add_patient(first_name, last_name, phone, email, new_date)
         close_patient(add_patient_window)
         patient()
 
 def filter_treatment(*args):
     global patient_id
-    data = dc.get_treatments(patient_id=patient_id, filter=var_treatmentfilter.get(), col_filter=var_treatmentoption.get())
+    data = dc.get_treatments(patient_id=patient_id, filter=var_treatmentfilter.get(), 
+        col_filter=var_treatmentoption.get(), sort=var_treatmentsort.get())
     fill_treatments(table_treatment, data)
 
 def fill_treatments(table, data):
@@ -1390,56 +1623,97 @@ def on_row_edit_treatment(event):
     window.after(100, edit_treatment_window.focus)
 
 
+def calculate_age(birth_date):
+    today = datetime.date.today()
+    age = today.year - birth_date.year
+    if today.month < birth_date.month or (today.month == birth_date.month and today.day < birth_date.day):
+        age -= 1
+    return age
+
 """
     page **** Treatment ****
 """
 def patientinfo(event = None):
-    global treatment_data, patient_id, var_treatmentfilter, var_treatmentoption, table_treatment
+    global treatment_data, patient_id, var_treatmentfilter, var_treatmentoption, table_treatment, label_menu, menu_opened
+    current_patient = dc.get_patient_by_id(patient_id)
+    if not current_patient:
+        messagebox.showerror('Error', 'No patient selected')
+        return
     for widgets in main_frame.winfo_children():
         widgets.destroy()
-
+    try:
+        label_menu.destroy()
+    except:
+        pass
+    if not menu_opened:
+        label_menu = customtkinter.CTkLabel(window, image=customtkinter.CTkImage(light_image=Image.open('images/menu.png'), 
+                size=(25,25)), text='')
+        label_menu.bind('<Button-1>', lambda e: open_menu(label_menu))
+    else:
+        label_menu = customtkinter.CTkLabel(window, image=customtkinter.CTkImage(light_image=Image.open('images/close.png'), 
+                size=(25,25)), text='')
+        label_menu.bind('<Button-1>', lambda e: close_menu(label_menu))
+    label_menu.grid(row=0, column=0, padx=(15,0), pady=5, sticky='W')
+    create_menu('patient_info')
     l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Patient Info >', font=("consolas", breadcrumbs_size))
     l.pack(side='left')
     l.bind('<Button-1>', patientinfo_click)
+    l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+    l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
     page_found = False
     for widget in frame_breadcrumbs.winfo_children():
         if page_found:
             widget.destroy()
         if ' Patient Info >' == widget.cget('text'):
             page_found = True
-    current_patient = dc.get_patient_by_id(patient_id)
-    main_frame.grid_columnconfigure(0, weight=1)
-    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
-    main_frame.grid_rowconfigure(3, weight=1)
-    main_frame.grid_rowconfigure((0,1,2,4), weight=0)
+    main_frame.grid_columnconfigure(1, weight=1)
+    main_frame.grid_columnconfigure((0,2,3,4), weight=0)
+    main_frame.grid_rowconfigure(2, weight=1)
+    main_frame.grid_rowconfigure((0,1,3,4), weight=0)
     p_label = customtkinter.CTkLabel(main_frame,
                     # fullname
                     text=current_patient[1] + " " + current_patient[2],
                     font=("consolas", 25))
-    p_label.grid(row=0, column=0, padx=25, sticky='W', pady=(25,5))
-
-    p_label = customtkinter.CTkLabel(main_frame,
-                    text='Treatments List',
-                    font=("consolas", 15))
-    p_label.grid(row=1, column=0, padx=80, sticky='W')
-    # data = (
-    #     ('Treatment1', '3 Visits', 'December 10, 1815', 'Delete'),
-    #     ('Treatment2', '2 Visits', 'December 10, 1915', 'Delete'),
-    #     ('Treatment3', '0 Visits', 'December 10, 1815', 'Delete'),
-    # )
-
-    treatment_data = dc.get_treatments(patient_id)
+    p_label.grid(row=0, column=0, columnspan=2, padx=(25, 0), sticky='W', pady=(25,5))
+    frame_info = customtkinter.CTkFrame(main_frame, corner_radius=20)
+    frame_info.grid(row=2, column=0, sticky='NS', padx=(10,0), pady=(0,50))
+    frame_info.grid_columnconfigure((0,1), weight=1)
+    frame_info.grid_rowconfigure((0,1,2,3,4,5), weight=1)
+    customtkinter.CTkLabel(frame_info, text='First Name:', font=('consolas', 20), anchor='w').grid(row=0, column=0, sticky='NSEW', padx=5, pady=5)
+    customtkinter.CTkLabel(frame_info, text='Last Name:', font=('consolas', 20), anchor='w').grid(row=1, column=0, sticky='NSEW', padx=5, pady=5)
+    customtkinter.CTkLabel(frame_info, text='Birth Date:', font=('consolas', 20), anchor='w').grid(row=2, column=0, sticky='NSEW', padx=5, pady=5)
+    customtkinter.CTkLabel(frame_info, text='Phone Number:', font=('consolas', 20), anchor='w').grid(row=3, column=0, sticky='NSEW', padx=5, pady=5)
+    customtkinter.CTkLabel(frame_info, text='Email:', font=('consolas', 20), anchor='w').grid(row=4, column=0, sticky='NSEW', padx=5, pady=5)
+    customtkinter.CTkLabel(frame_info, text='Age:', font=('consolas', 20), anchor='w').grid(row=5, column=0, sticky='NSEW', padx=5, pady=5)
+    for i in range(5):
+        en = customtkinter.CTkEntry(frame_info, font=('consolas', 20), justify='center')
+        en.grid(row=i, column=1, sticky='NSEW', padx=5, pady=5)
+        if current_patient[1+i]:
+            en.insert(0, current_patient[1+i])
+        en.configure(state='disabled')
+    en = customtkinter.CTkEntry(frame_info, font=('consolas', 20), justify='center')
+    en.grid(row=5, column=1, sticky='NSEW', padx=5, pady=5)
+    try:
+        age = calculate_age(datetime.datetime.strptime(current_patient[3], '%m/%d/%Y').date())
+        en.insert(0, age)
+    except Exception as e:
+        print(e)
+    en.configure(state='disabled')
+    treatment_data = dc.get_treatments(patient_id, sort=var_treatmentsort.get())
     frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
-    frm.grid(row=2, column=0, pady=(20,10), padx=50)
-    customtkinter.CTkEntry(frm, textvariable=var_treatmentfilter).pack(side='left', padx=10)
+    frm.grid(row=1, column=1, pady=(20,10), padx=(0,50), sticky='EW')
+    customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20)).pack(side='left', padx=10)
+    customtkinter.CTkEntry(frm, textvariable=var_treatmentfilter, width=200).pack(side='left', padx=10)
     var_treatmentfilter.trace_add('write', filter_treatment)
     customtkinter.CTkOptionMenu(frm, values=["Treatment ID", "Treatment Name", "Start Date", "End Date", "Summary"], variable=var_treatmentoption, command=filter_treatment).pack(side='left', padx=10)
+    customtkinter.CTkOptionMenu(frm, values=["Treatment ID", "Treatment Name", "Start Date", "End Date", "Summary"], variable=var_treatmentsort, command=filter_treatment).pack(side='right', padx=10)
+    customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
     table_treatment = customtkinter.CTkScrollableFrame(main_frame)
-    table_treatment.grid(row=3, column=0, sticky='NSEW', padx=50, pady=(0,50))
+    table_treatment.grid(row=2, column=1, sticky='NSEW', padx=(10, 50), pady=(0,50))
     table_treatment.grid_rowconfigure(0, weight=1)
     fill_treatments(table_treatment, treatment_data)
     frm = customtkinter.CTkFrame(master=main_frame, fg_color='#2b2b2b')
-    frm.grid(row=4, column=0, pady=15, sticky='EW')
+    frm.grid(row=3, column=0, columnspan=2, pady=15, sticky='EW')
 
     new_treatment_button = customtkinter.CTkButton(master=frm,
                                                    text='New Treatment',
@@ -1481,18 +1755,24 @@ class TreatmentWindow(customtkinter.CTkToplevel):
         self.title('Treatment')
         self.patient_id = patient_id
         self.resizable(False, False)
+        self.var_startD = StringVar(value='1/1/23')
+        self.var_endD = StringVar(value='1/10/23')
         customtkinter.CTkLabel(self, text="Treatment Name:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
         self.entry_treatment_name = customtkinter.CTkEntry(self)
         self.entry_treatment_name.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
         customtkinter.CTkLabel(self, text="Start Date:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        self.calstart = Calendar(self, selectmode="day", year=2023, month=1, day=1)
-        self.calstart.grid(row=1, column=1, padx=10, pady=10, sticky="e")
-        customtkinter.CTkLabel(self, text="End Date:").grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        self.calend = Calendar(self, selectmode="day", year=2023, month=1, day=10)
-        self.calend.grid(row=2, column=1, padx=10, pady=10, sticky="e")
-        customtkinter.CTkLabel(self, text="Summary:").grid(row=3, column=0, padx=10, pady=10, sticky="w")
-        self.summary = customtkinter.CTkTextbox(self)
-        self.summary.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        self.calstart = Calendar(self, selectmode="day", year=2023, month=1, day=1, font='consolas 15')
+        self.calstart.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="NSEW")
+        customtkinter.CTkEntry(self, textvariable=self.var_startD).grid(row=2, column=1, padx=10, pady=(5, 10), sticky="EW")
+        customtkinter.CTkLabel(self, text="End Date:").grid(row=3, column=0, padx=10, pady=10, sticky="w")
+        self.calend = Calendar(self, selectmode="day", year=2023, month=1, day=10, font='consolas 15')
+        self.calend.grid(row=3, column=1, padx=10, pady=10, sticky="NSEW")
+        customtkinter.CTkEntry(self, textvariable=self.var_endD).grid(row=4, column=1, padx=10, pady=(5, 10), sticky="EW")
+        self.calstart.bind('<<CalendarSelected>>', self.update_treatmentdate)
+        self.calend.bind('<<CalendarSelected>>', self.update_treatmentdate)
+        customtkinter.CTkLabel(self, text="Summary:").grid(row=5, column=0, padx=10, pady=10, sticky="w")
+        self.summary = customtkinter.CTkTextbox(self, border_color='#4d5254', fg_color='#343638', border_width=2)
+        self.summary.grid(row=5, column=1, padx=10, pady=10, sticky="NSEW")
         self.submit_button = customtkinter.CTkButton(self, 
             text='Submit',
             command=self.add_treatment
@@ -1505,7 +1785,12 @@ class TreatmentWindow(customtkinter.CTkToplevel):
             self.calend.selection_set(end_date)
             self.summary.insert("1.0", summary)
             self.submit_button.configure(command=self.edit_treatment)
-        self.submit_button.grid(row=4, column=0, columnspan=2, padx=20, pady=15, sticky="s")
+        self.submit_button.grid(row=6, column=0, columnspan=2, padx=20, pady=15, sticky="s")
+
+    
+    def update_treatmentdate(self, e):
+        self.var_startD.set(self.calstart.get_date())
+        self.var_endD.set(self.calend.get_date())
 
 
     def close_treatment(self, mode):
@@ -1543,8 +1828,12 @@ class TreatmentWindow(customtkinter.CTkToplevel):
         if not treatment_name:
             messagebox.showerror('Error', 'No treatment name was given')
         else:
-            new_start = datetime.datetime.strptime(calstart, "%m/%d/%y").strftime("%m/%d/%Y")
-            new_end = datetime.datetime.strptime(calend, "%m/%d/%y").strftime("%m/%d/%Y")
+            try:
+                new_start = datetime.datetime.strptime(self.var_startD.get(), "%m/%d/%y").strftime("%m/%d/%Y")
+                new_end = datetime.datetime.strptime(self.var_endD.get(), "%m/%d/%y").strftime("%m/%d/%Y")
+            except:
+                messagebox.showerror('Error', 'Please enter the date in the correct format such as: 1/20/23')
+                return
             dc.add_treatment(treatment_name, self.patient_id, new_start, new_end, summary)
             self.destroy()
             treatment_window_visible = False
@@ -1564,10 +1853,17 @@ def delete_treatment():
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
-    elif dc.remove_treatment(int(text)):
-        patientinfo()
     else:
-        messagebox.showerror('Error', 'ID of treatment not found.')
+        treatments = dc.get_treatments(patient_id, sort=var_treatmentsort.get())
+        name = ''
+        for item in treatments:
+            if item[0] == int(text) and item[2] == patient_id:
+                name = f"{item[1]}"
+                break
+        if not name:
+            messagebox.showerror('Error', 'ID of treatment not found.')
+        elif messagebox.askyesno('Delete Treatment', f'Are you sure you want to delete the treatment {name}?') and dc.remove_treatment(int(text)):
+            patientinfo()
 
 
 edit_treatment_visible = False
@@ -1849,10 +2145,13 @@ window = customtkinter.CTk()
 window.title("PowerMind")
 var_filter = StringVar()
 var_patientoption = customtkinter.StringVar(value="ID")
+var_patientsort = customtkinter.StringVar(value="ID")
 var_treatmentfilter = StringVar()
 var_treatmentoption = customtkinter.StringVar(value="Treatment ID")
+var_treatmentsort = customtkinter.StringVar(value="Treatment ID")
 var_visitfilter = customtkinter.StringVar()
 var_visitoption = customtkinter.StringVar(value="ID")
+var_visitsort = customtkinter.StringVar(value="ID")
 # Set the width and height of the window
 window_width = 1100
 window_height = 770
@@ -1892,20 +2191,307 @@ def patientinfo_click(event = None):
     patientinfo_tab.configure(fg_color="#2752D6", state='disabled')
     patientinfo()
 
+def on_enterMenu(label, frame):
+    frame.configure(fg_color="#2752D6")
+    label.configure(bg_color="#2752D6")
 
-window.grid_columnconfigure((0,1,2), weight=1)
+def on_leaveMenu(label, frame, leave_color='#2b2b2b'):
+    frame.configure(fg_color=leave_color)
+    label.configure(bg_color=leave_color)
+
+
+def show_appointments(e):
+    global app_calendar
+    date_selected = datetime.datetime.strptime(app_calendar.get_date(), "%m/%d/%y").strftime("%m/%d/%Y")
+    appointment_list = dc.get_appointments()
+    found = False
+    selected_apps = []
+    for a in appointment_list:
+        if a[1] == date_selected:
+            found = True
+            selected_apps.append(a)
+    if found:
+        window_showapp = customtkinter.CTkToplevel(window)
+        window_showapp.resizable(False, False)
+        window_showapp.title('Selected Appointments')
+        window_showapp.grid_columnconfigure(0, weight=1)
+        customtkinter.CTkLabel(window_showapp, text=date_selected, font=('consolas', 25)).grid(row=0, column=0, padx=25, pady=15)
+        checkboxes = []
+        for i in range(len(selected_apps)):
+            formated_str = f"{selected_apps[i][0]}. {selected_apps[i][4]}\t{selected_apps[i][2]}:{selected_apps[i][3]} {selected_apps[i][5]}"
+            c = customtkinter.CTkCheckBox(window_showapp, text=formated_str, font=('consolas', 20), onvalue=selected_apps[i][0], offvalue=False)
+            c.grid(row=i+1, column=0, padx=40, pady=15, sticky='EW')
+            checkboxes.append(c)
+        customtkinter.CTkButton(window_showapp, text='Delete Appointments', font=('consolas', 20), command=lambda:delete_appointment(checkboxes, window_showapp)).grid(row=i+3, column=0, pady=10, padx=15, sticky='EW')
+        window_showapp.after(100, window_showapp.focus)
+
+def delete_appointment(checkboxes, window_showapp):
+    delete = False
+    for c in checkboxes:
+        if c.get():
+            dc.delete_appointment(c.get())
+            delete = True
+    if delete:
+        appointment_list = dc.get_appointments()
+        for a in appointment_list:
+            app_calendar.calevent_create(datetime.datetime.strptime(a[1], '%m/%d/%Y'), "", tags="app")
+        window_showapp.destroy()
+
+appointment_window = None
+def appointments(e):
+    global appointment_window, app_calendar
+    if not appointment_window:
+        appointment_list = dc.get_appointments()
+        appointment_window = customtkinter.CTkToplevel(window)
+        appointment_window.resizable(False, False)
+        appointment_window.title('My Appointments')
+        appointment_window.geometry('650x600')
+        appointment_window.grid_columnconfigure(0, weight=1)
+        appointment_window.grid_rowconfigure(0, weight=1)
+        app_calendar = Calendar(appointment_window, selectmode="day", year=2023, month=6, day=20, font='consolas 25')
+        for a in appointment_list:
+            app_calendar.calevent_create(datetime.datetime.strptime(a[1], '%m/%d/%Y'), "", tags="app")
+        app_calendar.tag_config("app", foreground="black", background='green')
+        app_calendar.bind('<<CalendarSelected>>', show_appointments)
+        app_calendar.grid(row=0, column=0, sticky='NSEW', padx=45, pady=40)
+        #frm_bottom = customtkinter.CTkFrame(appointment_window, corner_radius=15)
+        ##frm_bottom.grid(row=1, column=0, sticky='EWS', padx=15, pady=10)
+        #frm_bottom.grid_columnconfigure((0,1), weight=1)
+        #customtkinter.CTkButton(frm_bottom, text='Delete Appointment', font=('consolas', 20)).grid(row=0, column=0, pady=10, padx=15)
+        customtkinter.CTkButton(appointment_window, text='New Appointment', font=('consolas', 20), command=new_appointment).grid(row=1, column=0, sticky='EWS', padx=15, pady=10)
+    appointment_window.protocol("WM_DELETE_WINDOW",  close_appointment)
+    appointment_window.after(100, appointment_window.focus)
+
+def new_appointment():
+    new_app = customtkinter.CTkToplevel(window)
+    new_app.resizable(False, False)
+    new_app.title('New Appointment')
+    new_app.geometry('400x450')
+    new_app.grid_columnconfigure((0,1), weight=1)
+    new_app.grid_rowconfigure((0,1,2), weight=1)
+    var_am = StringVar()
+    var_am.set('AM')
+    customtkinter.CTkLabel(new_app, text='Date:', font=('consolas', 20)).grid(row=0, column=0, sticky='W', padx=15)
+    customtkinter.CTkLabel(new_app, text='Time:', font=('consolas', 20)).grid(row=1, column=0, sticky='W', padx=15)
+    customtkinter.CTkLabel(new_app, text='Name:', font=('consolas', 20)).grid(row=2, column=0, sticky='W', padx=15)
+    new_date = Calendar(new_app, selectmode="day", year=2023, month=6, day=20, font='consolas 15')
+    new_date.grid(row=0, column=1, sticky='NSEW', padx=15, pady=(15,0))
+    frm = customtkinter.CTkFrame(new_app)
+    frm.grid(row=1, column=1, padx=15)
+    entry_hours = customtkinter.CTkEntry(frm, width=40, font=('consolas', 20))
+    entry_hours.pack(side='left')
+    customtkinter.CTkLabel(frm, text=':').pack(side='left')
+    entry_minutes = customtkinter.CTkEntry(frm, width=40, font=('consolas', 20))
+    entry_minutes.pack(side='left')
+    customtkinter.CTkOptionMenu(frm, values=['AM', 'PM'], variable=var_am, width=100).pack(side='left')
+    entry_name = customtkinter.CTkEntry(new_app, font=('consolas', 20))
+    entry_name.grid(row=2, column=1, sticky='EW', padx=15)
+    customtkinter.CTkButton(new_app, text='Save', font=('consolas', 20), command=lambda:add_appointment(
+        date=datetime.datetime.strptime(new_date.get_date(), "%m/%d/%y").strftime("%m/%d/%Y"),
+        time=(entry_hours.get(), entry_minutes.get()),
+        name=entry_name.get(),
+        new_app=new_app,
+        am=var_am.get()
+    )
+        ).grid(row=3, column=0, columnspan=2, pady=10, padx=15)
+    new_app.after(100, new_app.focus)
+
+def add_appointment(date, time, name, new_app, am):
+    if not time or not date or not name:
+        messagebox.showerror('Error', 'Please provide all the information')
+        new_app.focus()
+        return
+    dc.add_appointment(date, time, name, am)
+    appointment_list = dc.get_appointments()
+    for a in appointment_list:
+        app_calendar.calevent_create(datetime.datetime.strptime(a[1], '%m/%d/%Y'), "", tags="app")
+    new_app.destroy()
+
+def close_appointment():
+    global appointment_window
+    appointment_window.destroy()
+    appointment_window = None
+
+doctor_window = None
+
+def close_doctor():
+    global doctor_window
+    doctor_window.destroy()
+    doctor_window = None
+
+def save_doctor(first_name, last_name, country, phone):
+    global doctor_window
+    dc.save_doctor(first_name=first_name, last_name=last_name, country=country, phone=phone)
+    close_doctor()
+
+def doctor(e):
+    global doctor_window
+    if not doctor_window:
+        doctor_window = customtkinter.CTkToplevel(window)
+        doctor_window.resizable(False, False)
+        doctor_window.title('Doctor Profile')
+        doctor_window.geometry('500x450')
+        var_country = StringVar()
+        doctor_window.grid_columnconfigure((0,1), weight=1)
+        doctor_window.grid_rowconfigure((0,1,2,3,4), weight=1)
+        customtkinter.CTkLabel(doctor_window, text='First Name:', font=('consolas', 20)).grid(row=0, column=0, sticky='W', padx=15)
+        customtkinter.CTkLabel(doctor_window, text='Last Name:', font=('consolas', 20)).grid(row=1, column=0, sticky='W', padx=15)
+        customtkinter.CTkLabel(doctor_window, text='Country:', font=('consolas', 20)).grid(row=2, column=0, sticky='W', padx=15)
+        customtkinter.CTkLabel(doctor_window, text='Phone Number:', font=('consolas', 20)).grid(row=3, column=0, sticky='W', padx=15)
+        doctor_info = dc.get_doctor()
+        doctor_fname = customtkinter.CTkEntry(doctor_window, font=('consolas', 20))
+        doctor_fname.grid(row=0, column=1, sticky='EW', padx=15)
+        if doctor_info[1]:
+            doctor_fname.insert(0, doctor_info[1])
+        doctor_lname = customtkinter.CTkEntry(doctor_window, font=('consolas', 20))
+        doctor_lname.grid(row=1, column=1, sticky='EW', padx=15)
+        if doctor_info[2]:
+            doctor_fname.insert(0, doctor_info[2])
+        countries = ['USA', 'UK', 'Germany', 'France', 'Canada']
+        doctor_country = customtkinter.CTkComboBox(doctor_window, font=('consolas', 20), values=countries, variable=var_country)
+        doctor_country.grid(row=2, column=1, sticky='EW', padx=15)
+        if doctor_info[3]:
+            var_country.set(doctor_info[3])
+        doctor_number = customtkinter.CTkEntry(doctor_window, font=('consolas', 20))
+        doctor_number.grid(row=3, column=1, sticky='EW', padx=15)
+        if doctor_info[4]:
+            doctor_number.insert(0, doctor_info[4])
+        frm = customtkinter.CTkFrame(doctor_window, corner_radius=15)
+        frm.grid(row=4, column=0, columnspan=2, pady=10, sticky='EWS', padx=15)
+        frm.grid_columnconfigure((0,1), weight=1)
+        customtkinter.CTkButton(frm, text='Close', command=close_doctor).grid(row=0, column=0, pady=10)
+        customtkinter.CTkButton(frm, text='Save', command=lambda:save_doctor(
+            first_name=doctor_fname.get(),
+            last_name=doctor_lname.get(),
+            country=doctor_country.get(),
+            phone=doctor_number.get()
+        )).grid(row=0, column=1, pady=10)
+    doctor_window.protocol("WM_DELETE_WINDOW",  close_doctor)
+    doctor_window.after(100, doctor_window.focus)
+
+def create_menu(page):
+    global label_home, label_patient, label_patientinfo, frm_menu, menu_opened
+    frm_menu.destroy()
+    frm_menu = customtkinter.CTkFrame(window, corner_radius=20)
+    if page == 'home' or menu_opened:
+        frm_menu.grid(row=1, rowspan=4, column=0, sticky='NSEW', padx=20, pady=20)
+    frm_homemenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
+    frm_homemenu.pack(fill='x', pady=20, ipady=1, ipadx=1)
+    label_home = customtkinter.CTkLabel(frm_homemenu, text=' Home', font=('Consolas', 25), anchor='w',
+        image=customtkinter.CTkImage(light_image=Image.open('images/home.png'), size=(30,30)), compound='left', text_color='white')
+    label_home.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
+    frm_patientmenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
+    frm_patientmenu.pack(fill='x', pady=20, ipady=1, ipadx=1)
+    label_patient = customtkinter.CTkLabel(frm_patientmenu, text=' Patient', font=('Consolas', 25), anchor='w',
+        image=customtkinter.CTkImage(light_image=Image.open('images/patient.png'), size=(30,30)), compound='left', text_color='white')
+    label_patient.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
+    frm_patientinfomenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
+    frm_patientinfomenu.pack(fill='x', pady=20, ipady=1, ipadx=1)
+    label_patientinfo = customtkinter.CTkLabel(frm_patientinfomenu, text=' Patient Info', font=('Consolas', 25), anchor='w',
+        image=customtkinter.CTkImage(light_image=Image.open('images/info.png'), size=(30,30)), compound='left', text_color='white')
+    label_patientinfo.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
+    frm_appmenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
+    frm_appmenu.pack(fill='x', pady=20, ipady=1, ipadx=1)
+    label_app = customtkinter.CTkLabel(frm_appmenu, text=' My Appointments', font=('Consolas', 25), anchor='w',
+        image=customtkinter.CTkImage(light_image=Image.open('images/app.png'), size=(30,30)), compound='left', text_color='white')
+    label_app.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
+    frm_profilemenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
+    frm_profilemenu.pack(fill='x', pady=20, ipady=1, ipadx=1, side='bottom')
+    label_profile = customtkinter.CTkLabel(frm_profilemenu, text=' My Profile', font=('Consolas', 25), anchor='w',
+        image=customtkinter.CTkImage(light_image=Image.open('images/user.png'), size=(30,30)), compound='left', text_color='white')
+    label_profile.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
+    if page == 'home':
+        main_label = label_home
+        main_frame = frm_homemenu
+    elif page == 'patient':
+        main_label = label_patient
+        main_frame = frm_patientmenu
+    elif page == 'patient_info':
+        main_label = label_patientinfo
+        main_frame = frm_patientinfomenu
+    main_label.configure(bg_color='white', text_color='black')
+    main_frame.configure(fg_color='white')
+    label_home.bind('<Button-1>', home)
+    label_patient.bind('<Button-1>', patient)
+    label_patientinfo.bind('<Button-1>', patientinfo)
+    label_app.bind('<Button-1>', appointments)
+    label_profile.bind('<Button-1>', doctor)
+    for widgets in [(label_home, frm_homemenu), (label_patient, frm_patientmenu), (label_patientinfo, frm_patientinfomenu),
+        (label_profile, frm_profilemenu), (label_app, frm_appmenu)]:
+        widgets[0].bind('<Enter>', lambda e, label=widgets[0], frame=widgets[1]: on_enterMenu(label, frame))
+        if widgets[0] == main_label:
+            widgets[0].bind('<Leave>', lambda e, label=widgets[0], frame=widgets[1]: on_leaveMenu(label, frame, 'white'))
+        else:
+            widgets[0].bind('<Leave>', lambda e, label=widgets[0], frame=widgets[1]: on_leaveMenu(label, frame))
+
+def update_date():
+    date_day.configure(state='normal')
+    date_day.delete(0, END)
+    date_day.insert(0, datetime.date.today().strftime("%d"))
+    date_day.configure(state='disabled')
+    date_month.configure(state='normal')
+    date_month.delete(0, END)
+    date_month.insert(0, datetime.date.today().strftime("%m"))
+    date_month.configure(state='disabled')
+    date_year.configure(state='normal')
+    date_year.delete(0, END)
+    date_year.insert(0, datetime.date.today().strftime("%Y"))
+    date_year.configure(state='disabled')
+    time_hour.configure(state='normal')
+    time_hour.delete(0, END)
+    time_hour.insert(0, datetime.datetime.now().strftime("%H"))
+    time_hour.configure(state='disabled')
+    time_minute.configure(state='normal')
+    time_minute.delete(0, END)
+    time_minute.insert(0, datetime.datetime.now().strftime("%M"))
+    time_minute.configure(state='disabled')
+    window.after(1000, update_date)
+
+window.grid_columnconfigure((1,2), weight=1)
 window.grid_rowconfigure(3, weight=1)
 
+frm_menu = customtkinter.CTkFrame(window, corner_radius=20)
+frm_menu.grid(row=1, rowspan=4, column=0, sticky='NSEW', padx=20, pady=20)
+create_menu('home')
 customtkinter.set_appearance_mode('dark') # set theme to dark regardless of system preferences
 patient_id = None
 image = Image.open('images/icon.png')
-powermind_label = customtkinter.CTkLabel(window,
+frm_top = customtkinter.CTkFrame(window)
+frm_top.grid(row=0, column=0, columnspan=3, sticky='EW')
+frm_top.grid_columnconfigure(0, weight=1)
+powermind_label = customtkinter.CTkLabel(frm_top,
                         compound='left',
                         text="PowerMind",
                         font=("consolas", 20),
                         image=customtkinter.CTkImage(light_image=image, size=(70,50)))
-powermind_label.grid(row=0, column=1, sticky='EW')
-
+powermind_label.grid(row=0, column=0, sticky='EW')
+frm_date = customtkinter.CTkFrame(frm_top, corner_radius=20)
+frm_date.grid(row=0, column=1, sticky='E', padx=15, pady=5)
+today_label = customtkinter.CTkLabel(frm_date, text="Today's Date:", font=('consolas', 15))
+today_label.grid(row=0, column=0, columnspan=3, sticky='w', padx=(10,15), pady=(5,0))
+time_label = customtkinter.CTkLabel(frm_date, text="Time:", font=('consolas', 15))
+time_label.grid(row=0, column=3, columnspan=2, sticky='w', pady=(5,0))
+date_day = customtkinter.CTkEntry(frm_date, width=30, justify='center')
+date_day.insert(0, datetime.date.today().strftime("%d"))
+date_day.configure(state='disabled')
+date_day.grid(row=1, column=0, sticky='w', padx=(10,0), pady=(0,5))
+date_month = customtkinter.CTkEntry(frm_date, width=30, justify='center')
+date_month.insert(0, datetime.date.today().strftime("%m"))
+date_month.configure(state='disabled')
+date_month.grid(row=1, column=1, sticky='w', pady=(0,5))
+date_year = customtkinter.CTkEntry(frm_date, width=50, justify='center')
+date_year.insert(0, datetime.date.today().strftime("%Y"))
+date_year.configure(state='disabled')
+date_year.grid(row=1, column=2, sticky='w', pady=(0,5), padx=(0, 15))
+time_hour = customtkinter.CTkEntry(frm_date, width=30)
+time_hour.grid(row=1, column=3, sticky='w', pady=(0,5))
+time_hour.insert(0, datetime.datetime.now().strftime("%H"))
+time_hour.configure(state='disabled')
+time_minute = customtkinter.CTkEntry(frm_date, width=30)
+time_minute.grid(row=1, column=4, sticky='w', pady=(0,5), padx=(0,10))
+time_minute.insert(0, datetime.datetime.now().strftime("%M"))
+time_minute.configure(state='disabled')
+window.after(1000, update_date)
 tab_width = int(window_width / 3)
 home_tab = customtkinter.CTkButton(window,
                  text="Home",
@@ -1914,7 +2500,7 @@ home_tab = customtkinter.CTkButton(window,
                  text_color_disabled='white',
                  font=("consolas", 20),
                  command=home_click)
-home_tab.grid(row=1, column=0, sticky='EW', padx=15, pady=5)
+#home_tab.grid(row=1, column=0, sticky='EW', padx=15, pady=5)
 
 patient_tab = customtkinter.CTkButton(window,
                     text="Patient",
@@ -1922,7 +2508,7 @@ patient_tab = customtkinter.CTkButton(window,
                     text_color_disabled='white',
                     font=("consolas", 20),
                     command=patient_click)
-patient_tab.grid(row=1, column=1, sticky='EW', padx=15, pady=5)
+#patient_tab.grid(row=1, column=1, sticky='EW', padx=15, pady=5)
 
 patientinfo_tab = customtkinter.CTkButton(window,
                         text="Patient Info",
@@ -1930,16 +2516,16 @@ patientinfo_tab = customtkinter.CTkButton(window,
                         font=("consolas", 20),
                         text_color_disabled='white',
                         command=patientinfo_click)
-patientinfo_tab.grid(row=1, column=2, sticky='EW', padx=15, pady=5)
+#patientinfo_tab.grid(row=1, column=2, sticky='EW', padx=15, pady=5)
 
 frame_breadcrumbs = customtkinter.CTkFrame(window, fg_color='#242424',
                    )
-frame_breadcrumbs.grid(row=2, column=0, columnspan=3, pady=10, sticky='W', padx=30)
-breadcrumbs_size = 25
+frame_breadcrumbs.grid(row=2, column=1, columnspan=2, pady=10, sticky='W', padx=30)
+breadcrumbs_size = 20
 
 main_frame = customtkinter.CTkFrame(window
                    )
-main_frame.grid(row=3, column=0, columnspan=3, sticky='NSEW')
+main_frame.grid(row=3, column=1, columnspan=2, sticky='NSEW')
 
 text_size = 22
 home()

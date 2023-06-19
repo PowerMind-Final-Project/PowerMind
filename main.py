@@ -1,5 +1,5 @@
 from tkinter import *
-from PIL import Image
+from PIL import Image, ImageTk
 import customtkinter
 from tkinter import messagebox
 import datetime
@@ -16,8 +16,12 @@ import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
 import numpy as np
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 # from Alfa.Data.BCI_data import TimeAxis, df, ratio
+import subprocess
+import sqlite3
+conn = sqlite3.connect('database.db')
 
 
 
@@ -50,17 +54,54 @@ Progress Notes: The patient's blood pressure has been consistently high, but the
 
 
 def open_test_window():
-    subprocess.Popen(["python", "N-back-tkinter/N-back-tkinter.py"])
+    global treatment_id
+    #subprocess.Popen(["python", "N-back-tkinter/N-back-tkinter.py"])
+    process = subprocess.Popen(["python", "N-back-tkinter/NBack.py", str(treatment_id)])
+    stdout, stderr = process.communicate()
 
+    # Check the return code of the subprocess
+    return_code = process.returncode
+
+    """print("Output:", stdout.decode())
+    print("Error:", stderr.decode())
+    print("Return Code:", return_code)"""
+    password_window = customtkinter.CTkToplevel()
+    window.withdraw()
+    password_window.title('Password')
+    password_window.grid_columnconfigure((0,1), weight=1)
+    password_window.resizable(False, False)
+    customtkinter.CTkLabel(password_window, font=('Consolas', 25), text='Password:').grid(row=0, column=0, padx=15, pady=(50, 15))
+    entry_password = customtkinter.CTkEntry(password_window, font=('Consolas', 25), show='*', width=300)
+    entry_password.grid(row=0, column=1, padx=(15,0), pady=(50, 15))
+    label_show = customtkinter.CTkLabel(password_window, text='', image=customtkinter.CTkImage(light_image=Image.open('images/show.png'), size=(40, 40)))
+    label_show.grid(row=0, column=2, padx=(5,15), pady=(50, 15))
+    label_show.bind('<Button-1>', lambda e: show_password(label_show, entry_password))
+    customtkinter.CTkButton(password_window, font=('Consolas', 25), text='Submit', command=lambda:submit_password(entry_password.get(), password_window)).grid(row=1, column=0, columnspan=3, padx=15, pady=15)
+    password_window.after(100, password_window.focus)
+
+def submit_password(password, password_window):
+    if password == '0000':
+        window.deiconify()
+        password_window.destroy()
+
+def hide_password(label_show, entry_password):
+    entry_password.configure(show='*')
+    label_show.configure(image=customtkinter.CTkImage(light_image=Image.open('images/show.png'), size=(40, 40)))
+    label_show.bind('<Button-1>', lambda e: show_password(label_show, entry_password))
+
+def show_password(label_show, entry_password):
+    entry_password.configure(show='')
+    label_show.configure(image=customtkinter.CTkImage(light_image=Image.open('images/hide.png'), size=(40, 40)))
+    label_show.bind('<Button-1>', lambda e: hide_password(label_show, entry_password))
 
 def open_result_window():
     subprocess.Popen(["python", "Data/BCI_data.py"])
 
 
-def save_source(test_summary, attention_level, external_source, doctor_name):
+def save_source(test_summary, attention_level, external_source, doctor_name, recommendation, rec_date, references, ref_date):
     visit_type = 'from another source'
     today = datetime.datetime.today().strftime("%m/%d/%Y")
-    dc.add_visit(treatment_id, today, visit_type, test_summary, attention_level, external_source, doctor_name)
+    dc.add_visit(treatment_id, today, visit_type, test_summary, attention_level, external_source, doctor_name, recommendation, rec_date, references, ref_date)
     show_treatment(treatment_id)
 
 
@@ -85,10 +126,10 @@ def new_information(visit_id = None, edit = False, skip = False):
         if ' External Source >' == widget.cget('text'):
             page_found = True
 
-    main_frame.grid_rowconfigure((0,1,2,4), weight=0)
     main_frame.grid_rowconfigure(3, weight=1)
     main_frame.grid_columnconfigure((0,1), weight=1)
-    main_frame.grid_columnconfigure((2,3,4), weight=0)
+    main_frame.grid_columnconfigure((2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,1,2,4,5,6,7,8,9,10), weight=0)
 
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
@@ -124,17 +165,17 @@ def new_information(visit_id = None, edit = False, skip = False):
 
     test_entry = customtkinter.CTkTextbox(master=main_frame,
                                         border_width=2)
-    test_entry.grid(row=3, column=0, sticky='NSEW', padx=50, pady=(0,75))
+    test_entry.grid(row=3, rowspan=2, column=0, sticky='NSEW', padx=50, pady=(0,35))
 
     attention_level_label = customtkinter.CTkLabel(main_frame,
                                   text='Attention Level',
                                   font=("consolas", 12))
-    attention_level_label.grid(row=2, column=1, sticky='W', padx=50)
+    attention_level_label.grid(row=2, column=1, sticky='W', padx=(0,20))
 
     frame = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_rowconfigure((0,2,4), weight=1)
-    frame.grid(row=3, column=1, sticky='NSEW', padx=(50,20), pady=(0,75))
+    frame.grid(row=3, column=1, sticky='NSEW', padx=(0,20), pady=(0,5))
     attention_entry = customtkinter.CTkTextbox(master=frame,
                                              border_width=2)
     attention_entry.grid(row=0, column=0, sticky='NSEW')
@@ -156,11 +197,46 @@ def new_information(visit_id = None, edit = False, skip = False):
     doctor_name_entry = customtkinter.CTkTextbox(master=frame,
                                                border_width=2)
     doctor_name_entry.grid(row=4, column=0, sticky='NSEW')
+    f = customtkinter.CTkFrame(master=main_frame)
+    f.grid(row=4, column=1, sticky='NSEW', pady=(0,35), padx=(0,20))
+    f.grid_columnconfigure((0,1), weight=1)
+    f.grid_rowconfigure(0, weight=1)
+    f2 = customtkinter.CTkFrame(f)
+    f2.grid(row=0, column=0, sticky='NSEW', padx=10, pady=10)
+    customtkinter.CTkLabel(f2, text='Recommendation', 
+                                  anchor='w',
+                                  font=("consolas", 12)).pack(fill='x', padx=10)
+    recommendation_entry = customtkinter.CTkTextbox(master=f2, border_width=2)
+    recommendation_entry.pack(fill='both', padx=10, pady=10)
+    """customtkinter.CTkLabel(main_frame,
+                                  text='End Date', 
+                                  anchor='w',
+                                  font=("consolas", 12)).grid(row=6, column=1, sticky='EW')"""
+    cal_rec = Calendar(f2, selectmode="day", year=2023, month=3, day=20, font='consolas 10')
+    cal_rec.pack(fill='both', expand=True, padx=10, pady=10)
+
+    f3 = customtkinter.CTkFrame(f)
+    f3.grid(row=0, column=1, sticky='NSEW', padx=10, pady=10)
+    customtkinter.CTkLabel(f3, text='References', 
+                                  anchor='w',
+                                  font=("consolas", 12)).pack(fill='x', padx=10)
+    reference_entry = customtkinter.CTkTextbox(master=f3, border_width=2)
+    reference_entry.pack(fill='both', padx=10, pady=10)
+    """customtkinter.CTkLabel(main_frame,
+                                  text='End Date', 
+                                  anchor='w',
+                                  font=("consolas", 12)).grid(row=6, column=1, sticky='EW')"""
+    cal_ref = Calendar(f3, selectmode="day", year=2023, month=3, day=20, font='consolas 10')
+    cal_ref.pack(fill='both', expand=True, padx=10, pady=10)
     edit_butt.configure(command=lambda:save_source(
         test_entry.get("1.0", END).rstrip('\n'),
         attention_entry.get("1.0", END).rstrip('\n'),
         location_entry.get("1.0", END).rstrip('\n'),
         doctor_name_entry.get("1.0", END).rstrip('\n'),
+        recommendation_entry.get("1.0", END).rstrip('\n'),
+        cal_rec.get_date(),
+        reference_entry.get("1.0", END).rstrip('\n'),
+        cal_ref.get_date()
         ))
     if visit_id:
         visit = dc.get_visit_by_id(visit_id)
@@ -181,11 +257,31 @@ def new_information(visit_id = None, edit = False, skip = False):
             doctor_name_entry.insert("1.0", visit[8])
         except:
             pass
+        try:
+            recommendation_entry.insert("1.0", visit[9])
+        except:
+            pass
+        try:
+            cal_rec.selection_set(visit[10])
+        except:
+            pass
+        try:
+            reference_entry.insert("1.0", visit[11])
+        except:
+            pass
+        try:
+            cal_ref.selection_set(visit[12])
+        except:
+            pass
         if not edit:
             test_entry.configure(state='disabled')
             attention_entry.configure(state='disabled')
             location_entry.configure(state='disabled')
             doctor_name_entry.configure(state='disabled')
+            recommendation_entry.configure(state='disabled')
+            cal_rec.configure(state='disabled')
+            reference_entry.configure(state='disabled')
+            cal_ref.configure(state='disabled')
             edit_butt.pack_forget()
         else:
             edit_butt.configure(command=lambda:(dc.update_visit(
@@ -193,8 +289,14 @@ def new_information(visit_id = None, edit = False, skip = False):
                 test_entry.get("1.0", END).rstrip('\n'), 
                 attention_entry.get("1.0", END).rstrip('\n'),
                 location_entry.get("1.0", END).rstrip('\n'),
-                doctor_name_entry.get("1.0", END).rstrip('\n')),
+                doctor_name_entry.get("1.0", END).rstrip('\n'),
+                recommendation_entry.get("1.0", END).rstrip('\n'),
+                cal_rec.get_date(),
+                reference_entry.get("1.0", END).rstrip('\n'),
+                cal_ref.get_date()),
                 show_treatment(treatment_id)))
+            
+            customtkinter.CTkButton(main_frame, text='Delete', command=lambda:delete_visit(visit_id)).grid(row=5, column=0, columnspan=2, pady=(0, 10), sticky='s')
 
 
 """
@@ -217,10 +319,10 @@ def new_summary(visit_id=None, edit = False, skip = False):
         if ' Summary >' == widget.cget('text'):
             page_found = True
 
-    main_frame.grid_rowconfigure((0,1,2,4), weight=0)
-    main_frame.grid_rowconfigure(3, weight=1)
+    main_frame.grid_rowconfigure((3,5), weight=1)
     main_frame.grid_columnconfigure((0,1), weight=1)
-    main_frame.grid_columnconfigure((2,3,4), weight=0)
+    main_frame.grid_columnconfigure((2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,1,2,4,6,7,8,9,10), weight=0)
 
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
@@ -252,7 +354,7 @@ def new_summary(visit_id=None, edit = False, skip = False):
 
     test_entry = customtkinter.CTkTextbox(master=main_frame,
                                         border_width=2)
-    test_entry.grid(row=3, column=0, padx=50, pady=(0,75), sticky='NSEW')
+    test_entry.grid(row=3, rowspan=2, column=0, padx=50, pady=(0,30), sticky='NSEW')
 
     attention_level_label = customtkinter.CTkLabel(main_frame,
                                   text='Attention Level', 
@@ -262,8 +364,47 @@ def new_summary(visit_id=None, edit = False, skip = False):
 
     attention_entry = customtkinter.CTkTextbox(master=main_frame,
                                              border_width=2)
-    attention_entry.grid(row=3, column=1, pady=(0,75), sticky='NSEW', padx=(0,50))
-    edit_butt.configure(command=lambda:save_summary(test_entry.get("1.0", END).rstrip('\n'), attention_entry.get("1.0", END).rstrip('\n')))
+    attention_entry.grid(row=3, column=1, pady=(0,5), sticky='NSEW', padx=(0,50))
+    f = customtkinter.CTkFrame(master=main_frame)
+    f.grid(row=4, column=1, pady=(5,35), sticky='NSEW', padx=(0,50))
+    f.grid_columnconfigure((0,1), weight=1)
+    f.grid_rowconfigure(0, weight=1)
+    f2 = customtkinter.CTkFrame(f)
+    f2.grid(row=0, column=0, sticky='NSEW', padx=10, pady=10)
+    customtkinter.CTkLabel(f2, text='Recommendation', 
+                                  anchor='w',
+                                  font=("consolas", 12)).pack(fill='x', padx=10)
+    recommendation_entry = customtkinter.CTkTextbox(master=f2, border_width=2)
+    recommendation_entry.pack(fill='both', padx=10, pady=10)
+    """customtkinter.CTkLabel(main_frame,
+                                  text='End Date', 
+                                  anchor='w',
+                                  font=("consolas", 12)).grid(row=6, column=1, sticky='EW')"""
+    cal_rec = Calendar(f2, selectmode="day", year=2023, month=3, day=20, font='consolas 10')
+    cal_rec.pack(fill='both', expand=True, padx=10, pady=10)
+
+    f3 = customtkinter.CTkFrame(f)
+    f3.grid(row=0, column=1, sticky='NSEW', padx=10, pady=10)
+    customtkinter.CTkLabel(f3, text='References', 
+                                  anchor='w',
+                                  font=("consolas", 12)).pack(fill='x', padx=10)
+    reference_entry = customtkinter.CTkTextbox(master=f3, border_width=2)
+    reference_entry.pack(fill='both', padx=10, pady=10)
+    """customtkinter.CTkLabel(main_frame,
+                                  text='End Date', 
+                                  anchor='w',
+                                  font=("consolas", 12)).grid(row=6, column=1, sticky='EW')"""
+    cal_ref = Calendar(f3, selectmode="day", year=2023, month=3, day=20, font='consolas 10')
+    cal_ref.pack(fill='both', expand=True, padx=10, pady=10)
+
+
+    edit_butt.configure(command=lambda:save_summary(test_entry.get("1.0", END).rstrip('\n'), 
+        attention_entry.get("1.0", END).rstrip('\n'),
+        recommendation_entry.get("1.0", END).rstrip('\n'),
+        cal_rec.get_date(),
+        reference_entry.get("1.0", END).rstrip('\n'),
+        cal_ref.get_date()
+        ))
     if visit_id:
         back_button.configure(command=lambda:show_treatment(treatment_id))
         visit = dc.get_visit_by_id(visit_id)
@@ -275,9 +416,29 @@ def new_summary(visit_id=None, edit = False, skip = False):
             attention_entry.insert("1.0", visit[5])
         except:
             pass
+        try:
+            recommendation_entry.insert("1.0", visit[9])
+        except:
+            pass
+        try:
+            cal_rec.selection_set(visit[10])
+        except:
+            pass
+        try:
+            reference_entry.insert("1.0", visit[11])
+        except:
+            pass
+        try:
+            cal_ref.selection_set(visit[12])
+        except:
+            pass
         if not edit:
             attention_entry.configure(state='disabled')
             test_entry.configure(state='disabled')
+            recommendation_entry.configure(state='disabled')
+            cal_rec.configure(state='disabled')
+            reference_entry.configure(state='disabled')
+            cal_ref.configure(state='disabled')
             edit_butt.pack_forget()
         else:
             edit_butt.configure(command=lambda:(dc.update_visit(
@@ -285,17 +446,22 @@ def new_summary(visit_id=None, edit = False, skip = False):
                 test_entry.get("1.0", END).rstrip('\n'),
                 attention_entry.get("1.0", END).rstrip('\n'),
                 '',
-                ''),
+                '',
+                recommendation_entry.get("1.0", END).rstrip('\n'),
+                cal_rec.get_date(),
+                reference_entry.get("1.0", END).rstrip('\n'),
+                cal_ref.get_date()
+                ),
                 show_treatment(treatment_id)
                 )
             )
+            customtkinter.CTkButton(main_frame, text='Delete', command=lambda:delete_visit(visit_id)).grid(row=5, column=0, columnspan=2, pady=(0, 10), sticky='s')
 
 
-
-def save_summary(summary, attention_level):
+def save_summary(summary, attention_level, recommendation, rec_date, references, ref_date):
     visit_type = 'summary'
     today = datetime.datetime.today().strftime("%m/%d/%Y")
-    dc.add_visit(treatment_id, today, visit_type, summary, attention_level, '', '')
+    dc.add_visit(treatment_id, today, visit_type, summary, attention_level, '', '', recommendation, rec_date, references, ref_date)
     show_treatment(treatment_id)
 
 
@@ -319,9 +485,9 @@ def new_visit(skip = False):
             page_found = True
     # Back Button
     main_frame.grid_columnconfigure((0,1), weight=1)
-    main_frame.grid_columnconfigure((2,3,4), weight=0)
+    main_frame.grid_columnconfigure((2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,2,3,4,5,6,7,8,9,10), weight=0)
     main_frame.grid_rowconfigure(1, weight=1)
-    main_frame.grid_rowconfigure((0,2,3,4), weight=0)
     back_button = customtkinter.CTkButton(master=main_frame,
                                           text="Back",
                                           width=100,
@@ -372,25 +538,54 @@ def new_visit(skip = False):
                                     command=new_summary)
     butt3.pack(expand=True, pady=(20,0))
 
-
 def close_treatment():
-    patientinfo()
+    patient()
 
 def on_row_edit_visit(event):
     global visit_id
     row_index = event.widget.grid_info()['row']
-    visit_id = int(data[row_index-1][0])
+    visit_id = int(visit_data[row_index-1][0])
     visit = dc.get_visit_by_id(visit_id)
     open_edit_visit(visit)
 
 def fill_visit(table, data):
+    global edit_img, table_rec, table_ref
+    edit_img = ImageTk.PhotoImage(Image.open('images/edit.png').resize((30,30)))
     for child in table.winfo_children():
         child.grid_forget()
-    column = ("ID", "treatment_id", "Date", "Visit Type", "Attention Level", "Edit")
+    column = ("ID", "treatment_id", "Date", "Reports", "Attention Level", "Edit")
+    column2 = ("Info", "Start Date", "End Date")
+    rec_data = []
+    ref_data = []
     for i in range(len(data)):
         new_row = list(data[i])
+        rec_data.append([new_row[5], new_row[2], new_row[6]])
+        ref_data.append([new_row[7], new_row[2], new_row[8]])
+        new_row = new_row[:5]
         new_row.append("Edit Visit")
         data[i] = new_row
+    for col, heading in enumerate(column2):
+        Label(table_rec, text=heading,
+              bg="#808080",
+              fg='white',
+              border=2,
+              padx=10,
+              pady=10,
+              relief="solid",
+              highlightbackground='black',
+              font=('Orega One', text_size+3)).grid(row=0, column=col, sticky="nsew")
+        table_rec.grid_columnconfigure(col, weight=1)
+        Label(table_ref, text=heading,
+              bg="#808080",
+              fg='white',
+              border=2,
+              padx=10,
+              pady=10,
+              relief="solid",
+              highlightbackground='black',
+              font=('Orega One', text_size+3)).grid(row=0, column=col, sticky="nsew")
+        table_ref.grid_columnconfigure(col, weight=1)
+
     for col, heading in enumerate(column):
         Label(table, text=heading,
               bg="#808080",
@@ -402,6 +597,34 @@ def fill_visit(table, data):
               highlightbackground='black',
               font=('Orega One', text_size+3)).grid(row=0, column=col, sticky="nsew")
         table.grid_columnconfigure(col, weight=1)
+
+    for row, record in enumerate(rec_data, start=1):
+        for col, value in enumerate(record):
+            l = Label(table_rec,
+                        text=value,
+                        padx=5,
+                        pady=20,
+                        borderwidth=2,
+                        font=('Orega One', text_size),
+                        relief="solid",
+                        highlightbackground='black',
+                        fg='white',
+                        bg='#242424')
+            l.grid(row=row, column=col, sticky="nsew")
+
+    for row, record in enumerate(ref_data, start=1):
+        for col, value in enumerate(record):
+            l = Label(table_ref,
+                        text=value,
+                        padx=5,
+                        pady=20,
+                        borderwidth=2,
+                        font=('Orega One', text_size),
+                        relief="solid",
+                        highlightbackground='black',
+                        fg='white',
+                        bg='#242424')
+            l.grid(row=row, column=col, sticky="nsew")
 
     for row, record in enumerate(data, start=1):
         labels = []
@@ -421,11 +644,12 @@ def fill_visit(table, data):
                 l.bind('<Button-1>', on_row_click_visit)
             elif col == 5:
                 l = Label(table,
-                        text=value,
+                        #text=value,
                         padx=5,
                         pady=20,
                         borderwidth=2,
-                        font=('Orega One', text_size, 'underline'),
+                        image=edit_img,
+                        #font=('Orega One', text_size, 'underline'),
                         relief="solid",
                         highlightbackground='black',
                         fg='white',
@@ -459,12 +683,497 @@ def on_row_click_visit(event):
         new_information(visit_id)
     elif visit_type == 'summary':
         new_summary(visit_id)
+    elif 'MOXO CPT' in visit_type:
+        moxo_page()
+    elif 'Conners CPT' in visit_type:
+        # conners_page()
+        nback_page(visit_id)
+    elif 'N-Back' in visit_type:
+        nback_page(visit_id)
+    elif 'Trail Making' in visit_type:
+        trailmaking_page()
 
+"""
+    Page **** MOXO CPT ****
+"""
+def moxo_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure(0, weight=1)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' MOXO CPT >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: moxo_page(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' MOXO CPT >' == widget.cget('text'):
+            page_found = True
+    customtkinter.CTkButton(main_frame, text='Back', command=lambda:show_treatment(treatment_id)).grid(row=1, column=0, sticky='s', pady=10)
+
+"""
+    Page **** Conners CPT ****
+"""
+def conners_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Conners CPT >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: conners_page(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Conners CPT >' == widget.cget('text'):
+            page_found = True
+    customtkinter.CTkButton(main_frame, text='Back', command=lambda:show_treatment(treatment_id)).grid(row=1, column=0, sticky='s', pady=10)
+
+"""
+    Page **** NBack ****
+"""
+
+def nback_page(visit_id, skip=False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1, 2, 3, 4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1, 2, 3, 4), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=lambda:show_treatment(treatment_id)).grid(row=1, column=0,
+                                                                                                       pady=15)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Test 4 >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: test4_page(True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(10, 18))
+    fig.delaxes(ax4)
+
+    # today = datetime.datetime.now().strftime("%d-%m-%Y")
+    # targetPattern = r"" + today + "*test.csv"
+    # test_file = glob.glob(targetPattern)[-1]
+    # df = pd.read_csv(test_file)
+    # !!!
+    # df = pd.read_csv("BCI_NBack.csv")
+    df = pd.read_sql_query(f"SELECT * FROM blc_tests WHERE visit_id={visit_id}", conn)
+    df.head()
+    df.info()
+    copy_df = df.copy()
+
+    Timestamp = df["Timestamp"]
+    meanAttention = df["Attention"].mean()
+    meanMeditation = df["Meditation"].mean()
+    meanTheta = df["Theta"].mean()
+    meanLowBeta = df["LowBeta"].mean()
+    # meanHighBeta= df["HighBeta"].mean()
+
+    # df["Timestamp"].fillna(meanTimestamp,inplace=True)
+    df["Attention"].fillna(meanAttention, inplace=True)
+    df["Meditation"].fillna(meanMeditation, inplace=True)
+    df["Theta"].fillna(meanTheta, inplace=True)
+    df["LowBeta"].fillna(meanLowBeta, inplace=True)
+    # df["HighBeta"].fillna(meanHighBeta,inplace=True)
+
+    # delete rows
+    df.drop('Delta', inplace=True, axis=1)
+    df.drop('LowAlpha', inplace=True, axis=1)
+    df.drop('HighAlpha', inplace=True, axis=1)
+    df.drop('HighBeta', inplace=True, axis=1)
+    df.drop('LowGamma', inplace=True, axis=1)
+    df.drop('HighGamma', inplace=True, axis=1)
+
+    # Updated the data form
+    cleaned_df = df
+
+    # Define a Series of timestamps as strings
+    timestamp_series_str = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt = pd.to_datetime(timestamp_series_str, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec = timestamp_series_dt.astype('int64') // 10 ** 9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis = timestamp_series_sec - timestamp_series_sec.iloc[0]
+
+    df['Theta-Beta Ratio'] = (cleaned_df['Theta']) / (cleaned_df['LowBeta'])
+
+    ratio = np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta']))
+    # Create the ratio graph
+    # plt.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
+
+    # Add title and axis labels
+    plt.title(f'Theta/LowBeta = {round(ratio, 4)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Theta/LowBeta')
+
+    # Show the graph
+    # plt.show()
+
+    """# **Exploratory Data Analysis**
+    Each feature analysis
+    """
+
+    df['AttentionMean'] = (cleaned_df['Attention'])
+    mean = np.mean(cleaned_df['Attention'])
+    # plt.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
+
+    # Add title and axis labels
+    plt.title(f'AttentionMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Attention')
+
+    # Show the graph
+    # plt.show()
+
+    df['MeditationMean'] = (cleaned_df['Meditation'])
+    mean = np.mean(cleaned_df['Meditation'])
+    # plt.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
+
+    # Add title and axis labels
+    plt.title(f'MeditationMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Meditation')
+
+    # Show the graph
+    # plt.show()
+
+    ax1.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-', linewidth=1.5, markersize=0, color='b')
+    ax1.set_title(f'Theta/LowBeta = {round(ratio, 4)}')
+    ax1.set_xlabel('Time (min)')
+    ax1.set_ylabel('Theta/LowBeta')
+
+
+    mean1 = np.mean(df['Meditation'])
+    mean2 = np.mean(df['Attention'])
+    # Add second plot
+    ax2.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-', linewidth=1.5, markersize=0, color='c')
+    ax2.set_title(f'MeditationMean = {round(mean1, 3)}')
+    ax2.set_xlabel('Time (min)')
+    ax2.set_ylabel('Meditation')
+
+    # Add third plot
+    ax3.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-', linewidth=1.5, markersize=0, color='k')
+    ax3.set_title(f'AttentionMean = {round(mean2, 3)}')
+    ax3.set_xlabel('Time (min)')
+    ax3.set_ylabel('Attention')
+
+    # /////
+
+    fig.subplots_adjust(wspace=0.3, hspace=0.4)  # Adjust space between axes
+
+    canvas = FigureCanvasTkAgg(fig, master=scroll_frame)
+    canvas.draw()
+
+    # Add toolbar above the first and second plot
+    toolbar = NavigationToolbar2Tk(canvas, scroll_frame)
+    toolbar.update()
+    toolbar.pack(side=tk.TOP, fill=tk.X)
+
+    # Add clear button to toolbar
+    class ClearButton(tk.Button):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.config(text="Clear Tooltips", command=self.clear_tooltips)
+
+        def clear_tooltips(self):
+            fig = self.master.canvas.figure
+            for ax in fig.axes:
+                for line in ax.lines:
+                    line.set_gid(None)
+            self.master.canvas.draw_idle()
+
+    clear_button = ClearButton(toolbar)
+    toolbar.children['!button2'].pack(side=tk.LEFT)
+    clear_button.pack(side=tk.LEFT)
+
+    # Place the canvas below the toolbar
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    # # Add toolbar above the first and second plot
+    # toolbar = NavigationToolbar2Tk(canvas, main_frame)
+    # toolbar.update()
+    # toolbar.pack(side=tk.TOP, fill=tk.X)
+    #
+    # # Place the canvas below the toolbar
+    # canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    # ///////work////////////
+    # today = datetime.datetime.now().strftime("%d-%m-%Y")
+    # targetPattern = r"" + today + "*N-back.csv"
+    # test_file = glob.glob(targetPattern)[-1]
+    # dftest = pd.read_csv(test_file)
+    # db_data = dc.get_visit_results(visit_id)
+    # print('-----')
+    # print(db_data)
+    # print('-----')
+    # dftest = pd.read_csv("N-back.csv")
+    dftest = pd.read_sql_query(f"SELECT * FROM tests WHERE visit_id={visit_id}", conn)
+    # df1 = pd.read_csv("N-back.csv")
+    # df2 = pd.read_sql_query(f"SELECT * FROM tests WHERE visit_id={visit_id}", conn)
+    # breakpoint()
+    # return
+    dftest.head()
+    dftest.info()
+
+    # timestamp = dftest["Timestamp"]
+    timestamp = dftest["timestamp"]
+    results = dftest["result"]
+
+    timestamp_series_str2 = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt2 = pd.to_datetime(timestamp_series_str2, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec2 = timestamp_series_dt2.astype('int64') // 10 ** 9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis2 = timestamp_series_sec2 - timestamp_series_sec2.iloc[0]
+
+    import mplcursors
+    # test_timestamps = list(dftest['Timestamp'])
+    test_timestamps = list(dftest['timestamp'])
+
+    # iterate through df and add markers for matching timestamps in dftest
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax3.plot(TimeAxis2.iloc[i] / 60, df['AttentionMean'].iloc[i], 'ro', markersize=7,label='Incorrect Answer' if 'Incorrect Answer' not in ax3.get_legend_handles_labels()[1] else '')
+            else:
+                marker = ax3.plot(TimeAxis2.iloc[i] / 60, df['AttentionMean'].iloc[i], 'go', markersize=7,label='Correct Answer' if 'Correct Answer' not in ax3.get_legend_handles_labels()[1] else '')
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nAttention: {df['AttentionMean'][i]}\nGot Help: {dftest.loc[dftest['timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+    ax3.legend(loc='upper right', bbox_to_anchor=(1.20, 1))
+
+    # for ax2
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax2.plot(TimeAxis2.iloc[i] / 60, df['MeditationMean'].iloc[i], 'ro', markersize=7,label='Incorrect Answer' if 'Incorrect Answer' not in ax2.get_legend_handles_labels()[1] else '')
+            else:
+                marker = ax2.plot(TimeAxis2.iloc[i] / 60, df['MeditationMean'].iloc[i], 'go', markersize=7, label='Correct Answer' if 'Correct Answer' not in ax2.get_legend_handles_labels()[1] else '')
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nMeditation: {df['MeditationMean'][i]}\nGot Help: {dftest.loc[dftest['timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+    ax2.legend(loc='upper right', bbox_to_anchor=(1.20, 1))
+
+    # for ax1 Theta-Beta Ratio
+    # Create empty lists to store the plotted markers and their labels
+    markers = []
+    labels = []
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax1.plot(TimeAxis2.iloc[i] / 60, df['Theta-Beta Ratio'].iloc[i], 'ro', markersize=7,label='Incorrect Answer' if 'Incorrect Answer' not in ax1.get_legend_handles_labels()[1] else '')
+            else:
+                marker = ax1.plot(TimeAxis2.iloc[i] / 60, df['Theta-Beta Ratio'].iloc[i], 'go', markersize=7, label='Correct Answer' if 'Correct Answer' not in ax1.get_legend_handles_labels()[1] else '')
+
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nTheta-Beta Ratio: {df['Theta-Beta Ratio'][i]:.4f}\nGot Help: {dftest.loc[dftest['timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+
+    ax1.legend(loc='upper right', bbox_to_anchor=(1.20, 1))
+
+    #ax4 here:
+
+    #
+    # test_timestampss = pd.Series(dftest['Timestamp'])
+    # timestamp_series_dt5 = pd.to_datetime(test_timestampss, format='%d-%m-%Y_%H:%M:%S')
+    #
+    # # Convert the datetime Series to Unix timestamps in seconds
+    # timestamp_series_sec5 = timestamp_series_dt5.astype('int64') // 10 ** 9
+    #
+    # # Convert Int64Index to Series
+    # timestamp_series_sec5 = pd.Series(timestamp_series_sec5)
+    #
+    # # Print the Unix timestamp Series in seconds
+    # # print(timestamp_series_sec)
+    #
+    # TimeAxis5 = timestamp_series_sec5 - timestamp_series_sec5.iloc[0]
+    # # Create a boolean mask of rows where the timestamps match
+    # mask = df['Timestamp'].isin(dftest['Timestamp'])
+    #
+    # print(mask)
+    #
+    # # Filter the df DataFrame to only include rows where the timestamps match
+    # df_filtered = df[mask]
+    #
+    # # Plot the filtered data for 'MeditationMean'
+    # TimeAxis_filtered = TimeAxis5 / 60
+    # TimeAxis_filtered = TimeAxis_filtered.drop(TimeAxis_filtered.index[0])
+    # ax4.plot(TimeAxis_filtered, df_filtered['MeditationMean'], linestyle='-', linewidth=1.5, markersize=0,
+    #          color='c',
+    #          label='MeditationMean')
+    # ax4.plot(TimeAxis_filtered, df_filtered['AttentionMean'], linestyle='-', linewidth=1.5, markersize=0, color='k',
+    #          label='AttentionMean')
+    # ax4.plot(TimeAxis_filtered, df_filtered['Theta-Beta Ratio'], linestyle='-', linewidth=1.5, markersize=0,
+    #          color='b',
+    #          label='Theta-Beta Ratio')
+    # ax4.set_title(f'Summary')
+    # ax4.set_xlabel('Time (min)')
+    # ax4.set_ylabel('%')
+    # ax4.legend(loc='upper right', bbox_to_anchor=(1.30, 1))
+
+    # Add ax5 for the N-Back test
+
+    answersresults = dftest["result"].value_counts()  # Assuming "result" is the column name in the dftest DataFrame
+
+    data = answersresults.values
+    options = ["Correct", "Incorrect"]  # Use custom labels for 1 and 0
+
+    colors = ["green", "red"]
+
+    def func(pct, allvals):
+        absolute = int(np.round(pct / 100. * np.sum(allvals)))
+        return f"{pct:.1f}%\n({absolute:d} times)"
+
+    wedges, texts, autotexts = ax5.pie(data, autopct=lambda pct: func(pct, data), textprops=dict(color="w"),
+                                       colors=colors)
+
+    ax5.legend(wedges, options, title="Answers", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+    plt.setp(autotexts, size=8, weight="bold")
+    ax5.set_title("Correct Vs. Incorrect Answers")
+
+    # ax6
+    ncols = 6  # Update the number of columns
+    nrows = dftest.shape[0]
+
+    ax6.set_xlim(0, ncols + 1)
+    ax6.set_ylim(0, nrows + 1)
+
+    positions = [0.25, 3.2, 4.6, 6, 7.2, 8.4]  # Update the positions of the columns
+    # columns = ['Timestamp', 'Result', 'Reaction(min)', 'Got Help']  # Update the column names
+    columns = ['Timestamp', 'Result', 'Reaction(min)']  # Update the column names
+
+    # Add table's main text
+    for i in range(nrows):
+        for j, column in enumerate(columns):
+            if j == 0:
+                ha = 'left'
+                text_label = dftest['timestamp'].iloc[i]
+            elif j == 1:
+                ha = 'center'
+                if dftest['result'].iloc[i] == 1:
+                    text_label = 'Correct'
+                    color = 'green'  # Set color to green for 'Correct'
+                else:
+                    text_label = 'Incorrect'
+                    color = 'red'
+            elif j == 2:
+                ha = 'center'
+                text_label = f'{dftest["reaction_time"].iloc[i] / 60:.2f}'
+            # elif j == 3:
+            #     ha = 'center'
+            #     text_label = dftest['got_help'].iloc[i]
+
+            else:
+                ha = 'center'
+                text_label = f'{dftest[column.lower().replace(" ", "_")].iloc[i]}'
+            ax6.annotate(
+                xy=(positions[j], i + .5),
+                text=text_label,
+                ha=ha,
+                va='center',
+                weight='normal'
+            )
+
+    # Add column names
+    # column_names = ['Timestamp', 'Result', 'Reaction(min)', 'Got Help']
+    column_names = ['Timestamp', 'Result', 'Reaction(min)']
+    for index, c in enumerate(column_names):
+        if index == 0:
+            ha = 'left'
+        else:
+            ha = 'center'
+        ax6.annotate(
+            xy=(positions[index], nrows + .25),
+            text=column_names[index],
+            ha=ha,
+            va='bottom',
+            weight='bold'
+        )
+
+    # Add dividing lines
+    ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [nrows, nrows], lw=1.5, color='black', marker='', zorder=4)
+    ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [0, 0], lw=1.5, color='black', marker='', zorder=4)
+    for x in range(1, nrows):
+        ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [x, x], lw=1.15, color='gray', ls=':', zorder=3, marker='')
+    ax6.set_title(f'Test Results')
+    ax6.set_axis_off()
+
+"""
+    Page **** Trail Making ****
+"""
+def trailmaking_page(skip = False):
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure(0, weight=1)
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Trail Making >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: conners_page(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Trail Making >' == widget.cget('text'):
+            page_found = True
+    customtkinter.CTkButton(main_frame, text='Back', command=lambda:show_treatment(treatment_id)).grid(row=1, column=0, sticky='s', pady=10)
 
 def filter_visit(*args):
     global treatment_id, visit_data
     visit_data = dc.get_visits(treatment_id=treatment_id, filter=var_visitfilter.get(), 
         col_filter=var_visitoption.get(), sort=var_visitsort.get())
+    # fill_visit(table_visit, visit_data, table_rec, table_ref)
     fill_visit(table_visit, visit_data)
 
 
@@ -473,9 +1182,9 @@ def test1_page(skip = False):
         widgets.destroy()
     scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
     scroll_frame.grid(row=0, column=0, sticky='NSEW')
-    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
     main_frame.grid_columnconfigure(0, weight=1)
-    main_frame.grid_rowconfigure((1,2,3,4), weight=0)
+    main_frame.grid_rowconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
     main_frame.grid_rowconfigure(0, weight=1)
     customtkinter.CTkButton(main_frame, text='Back', font=('consolas', 20), command=results_page).grid(row=1, column=0, pady=15)
     if not skip:
@@ -556,12 +1265,361 @@ def test4_page(skip = False):
         l.bind('<Button-1>', lambda e: test4_page(True))
         l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
         l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
-    """window = customtkinter.CTkToplevel()
-    window.geometry("500x500")
-    window.title('Test 4')
-    frm = customtkinter.CTkScrollableFrame(window)
-    frm.pack(expand=True, fill='both')
-    window.after(100, window.focus)"""
+    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(10, 18))
+    # fig.delaxes(ax4)
+
+    today = datetime.datetime.now().strftime("%d-%m-%Y")
+    targetPattern = r""+today+"*test.csv"
+    test_file = glob.glob(targetPattern)[-1]
+    df = pd.read_csv(test_file)
+    df.head()
+    df.info()
+    copy_df = df.copy()
+
+    Timestamp = df["Timestamp"]
+    meanAttention = df["Attention"].mean()
+    meanMeditation = df["Meditation"].mean()
+    meanTheta = df["Theta"].mean()
+    meanLowBeta = df["LowBeta"].mean()
+    # meanHighBeta= df["HighBeta"].mean()
+
+    # df["Timestamp"].fillna(meanTimestamp,inplace=True)
+    df["Attention"].fillna(meanAttention, inplace=True)
+    df["Meditation"].fillna(meanMeditation, inplace=True)
+    df["Theta"].fillna(meanTheta, inplace=True)
+    df["LowBeta"].fillna(meanLowBeta, inplace=True)
+    # df["HighBeta"].fillna(meanHighBeta,inplace=True)
+
+    # delete rows
+    df.drop('Delta', inplace=True, axis=1)
+    df.drop('LowAlpha', inplace=True, axis=1)
+    df.drop('HighAlpha', inplace=True, axis=1)
+    df.drop('HighBeta', inplace=True, axis=1)
+    df.drop('LowGamma', inplace=True, axis=1)
+    df.drop('HighGamma', inplace=True, axis=1)
+
+    # Updated the data form
+    cleaned_df = df
+
+    # Define a Series of timestamps as strings
+    timestamp_series_str = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt = pd.to_datetime(timestamp_series_str, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec = timestamp_series_dt.astype('int64') // 10 ** 9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis = timestamp_series_sec - timestamp_series_sec.iloc[0]
+
+    df['Theta-Beta Ratio'] = (cleaned_df['Theta']) / (cleaned_df['LowBeta'])
+
+    ratio = np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta']))
+    # Create the ratio graph
+    # plt.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
+
+    # Add title and axis labels
+    plt.title(f'Theta/LowBeta = {round(ratio, 4)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Theta/LowBeta')
+
+    # Show the graph
+    # plt.show()
+
+    """# **Exploratory Data Analysis**
+    Each feature analysis
+    """
+
+    df['AttentionMean'] = (cleaned_df['Attention'])
+    mean = np.mean(cleaned_df['Attention'])
+    # plt.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
+
+    # Add title and axis labels
+    plt.title(f'AttentionMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Attention')
+
+    # Show the graph
+    # plt.show()
+
+    df['MeditationMean'] = (cleaned_df['Meditation'])
+    mean = np.mean(cleaned_df['Meditation'])
+    # plt.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
+
+    # Add title and axis labels
+    plt.title(f'MeditationMean = {round(mean, 3)}')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Meditation')
+
+    # Show the graph
+    # plt.show()
+
+    ax1.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-', linewidth=1.5, markersize=0, color='b')
+    ax1.set_title(f'Theta/LowBeta = {round(ratio, 4)}')
+    ax1.set_xlabel('Time (min)')
+    ax1.set_ylabel('Theta/LowBeta')
+
+    mean1 = np.mean(df['Meditation'])
+    mean2 = np.mean(df['Attention'])
+    # Add second plot
+    ax2.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-', linewidth=1.5, markersize=0, color='c')
+    ax2.set_title(f'MeditationMean = {round(mean1, 3)}')
+    ax2.set_xlabel('Time (min)')
+    ax2.set_ylabel('Meditation')
+
+    # Add third plot
+    ax3.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-', linewidth=1.5, markersize=0, color='k')
+    ax3.set_title(f'AttentionMean = {round(mean2, 3)}')
+    ax3.set_xlabel('Time (min)')
+    ax3.set_ylabel('Attention')
+
+    # /////
+
+    fig.subplots_adjust(wspace=0.3, hspace=0.4)  # Adjust space between axes
+
+    canvas = FigureCanvasTkAgg(fig, master=scroll_frame)
+    canvas.draw()
+
+    # Add toolbar above the first and second plot
+    toolbar = NavigationToolbar2Tk(canvas, scroll_frame)
+    toolbar.update()
+    toolbar.pack(side=tk.TOP, fill=tk.X)
+
+    # Add clear button to toolbar
+    class ClearButton(tk.Button):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.config(text="Clear Tooltips", command=self.clear_tooltips)
+
+        def clear_tooltips(self):
+            fig = self.master.canvas.figure
+            for ax in fig.axes:
+                for line in ax.lines:
+                    line.set_gid(None)
+            self.master.canvas.draw_idle()
+
+    clear_button = ClearButton(toolbar)
+    toolbar.children['!button2'].pack(side=tk.LEFT)
+    clear_button.pack(side=tk.LEFT)
+
+    # Place the canvas below the toolbar
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    # # Add toolbar above the first and second plot
+    # toolbar = NavigationToolbar2Tk(canvas, main_frame)
+    # toolbar.update()
+    # toolbar.pack(side=tk.TOP, fill=tk.X)
+    #
+    # # Place the canvas below the toolbar
+    # canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    # ///////work////////////
+    today = datetime.datetime.now().strftime("%d-%m-%Y")
+    targetPattern = r""+today+"*N-back.csv"
+    test_file = glob.glob(targetPattern)[-1]
+    dftest = pd.read_csv(test_file)
+    dftest.head()
+    dftest.info()
+
+    timestamp = dftest["Timestamp"]
+    results = dftest["result"]
+
+    timestamp_series_str2 = pd.Series(df["Timestamp"])
+
+    # Convert the timestamp Series to a datetime Series
+    timestamp_series_dt2 = pd.to_datetime(timestamp_series_str2, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec2 = timestamp_series_dt2.astype('int64') // 10 ** 9
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis2 = timestamp_series_sec2 - timestamp_series_sec2.iloc[0]
+
+    import mplcursors
+    test_timestamps = list(dftest['Timestamp'])
+
+    # iterate through df and add markers for matching timestamps in dftest
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax3.plot(TimeAxis2.iloc[i] / 60, df['AttentionMean'].iloc[i], 'ro', markersize=7)
+            else:
+                marker = ax3.plot(TimeAxis2.iloc[i] / 60, df['AttentionMean'].iloc[i], 'go', markersize=7)
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nAttention: {df['AttentionMean'][i]}\nGot Help: {dftest.loc[dftest['Timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+
+    # for ax2
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax2.plot(TimeAxis2.iloc[i] / 60, df['MeditationMean'].iloc[i], 'ro', markersize=7)
+            else:
+                marker = ax2.plot(TimeAxis2.iloc[i] / 60, df['MeditationMean'].iloc[i], 'go', markersize=7)
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nMeditation: {df['MeditationMean'][i]}\nGot Help: {dftest.loc[dftest['Timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+    # for ax1 Theta-Beta Ratio
+    for i, timestamp in enumerate(df['Timestamp']):
+        if timestamp in test_timestamps:
+            index = test_timestamps.index(timestamp)
+            if results[index] == 0:
+                marker = ax1.plot(TimeAxis2.iloc[i] / 60, df['Theta-Beta Ratio'].iloc[i], 'ro', markersize=7)
+            else:
+                marker = ax1.plot(TimeAxis2.iloc[i] / 60, df['Theta-Beta Ratio'].iloc[i], 'go', markersize=7)
+            # add tooltip to marker
+            mplcursors.Cursor(marker, hover=True).connect(
+                "add", lambda sel, i=i, timestamp=timestamp: sel.annotation.set_text(
+                    f"Timestamp: {timestamp}\nTheta-Beta Ratio: {df['Theta-Beta Ratio'][i]:.4f}\nGot Help: {dftest.loc[dftest['Timestamp'] == timestamp, 'got_help'].iloc[0]}"
+                    f"\nExpected Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'expected'].iloc[0]} \nReceived Answer: {dftest.loc[dftest['Timestamp'] == timestamp, 'received'].iloc[0]}"
+                )
+            )
+
+    test_timestampss = pd.Series(dftest['Timestamp'])
+    timestamp_series_dt5 = pd.to_datetime(test_timestampss, format='%d-%m-%Y_%H:%M:%S')
+
+    # Convert the datetime Series to Unix timestamps in seconds
+    timestamp_series_sec5 = timestamp_series_dt5.astype('int64') // 10 ** 9
+
+    # Convert Int64Index to Series
+    timestamp_series_sec5 = pd.Series(timestamp_series_sec5)
+
+    # Print the Unix timestamp Series in seconds
+    # print(timestamp_series_sec)
+
+    TimeAxis5 = timestamp_series_sec5 - timestamp_series_sec5.iloc[0]
+    # Create a boolean mask of rows where the timestamps match
+    mask = df['Timestamp'].isin(dftest['Timestamp'])
+
+    # print(mask)
+
+    # Filter the df DataFrame to only include rows where the timestamps match
+    df_filtered = df[mask]
+
+    # Plot the filtered data for 'MeditationMean'
+    TimeAxis_filtered = TimeAxis5 / 60
+    TimeAxis_filtered = TimeAxis_filtered.drop(TimeAxis_filtered.index[0])
+    ax4.plot(TimeAxis_filtered, df_filtered['MeditationMean'], linestyle='-', linewidth=1.5, markersize=0,
+             color='c',
+             label='MeditationMean')
+    ax4.plot(TimeAxis_filtered, df_filtered['AttentionMean'], linestyle='-', linewidth=1.5, markersize=0, color='k',
+             label='AttentionMean')
+    ax4.plot(TimeAxis_filtered, df_filtered['Theta-Beta Ratio'], linestyle='-', linewidth=1.5, markersize=0,
+             color='b',
+             label='Theta-Beta Ratio')
+    ax4.set_title(f'Summary')
+    ax4.set_xlabel('Time (min)')
+    ax4.set_ylabel('%')
+    ax4.legend(loc='upper right', bbox_to_anchor=(1.30, 1))
+
+    # Add ax5 for the N-Back test
+
+    answersresults = dftest["result"].value_counts()  # Assuming "result" is the column name in the dftest DataFrame
+
+    data = answersresults.values
+    options = ["Correct", "Incorrect"]  # Use custom labels for 1 and 0
+
+    colors = ["green", "red"]
+
+    def func(pct, allvals):
+        absolute = int(np.round(pct / 100. * np.sum(allvals)))
+        return f"{pct:.1f}%\n({absolute:d} times)"
+
+    wedges, texts, autotexts = ax5.pie(data, autopct=lambda pct: func(pct, data), textprops=dict(color="w"),
+                                       colors=colors)
+
+    ax5.legend(wedges, options, title="Answers", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+    plt.setp(autotexts, size=8, weight="bold")
+    ax5.set_title("Correct Vs. Incorrect Answers")
+
+    ncols = 9  # Update the number of columns
+    nrows = dftest.shape[0]
+
+    ax6.set_xlim(0, ncols + 1)
+    ax6.set_ylim(0, nrows + 1)
+
+    positions = [0.25, 3.2, 4.6, 6, 7.2, 8.4, 9.5, 11.9, 13.2]  # Update the positions of the columns
+    columns = ['Timestamp', 'Result', 'Reaction(min)', 'Got Help', 'Question', 'Expected',
+               'Received']  # Update the column names
+
+    # Add table's main text
+    for i in range(nrows):
+        for j, column in enumerate(columns):
+            if j == 0:
+                ha = 'left'
+                text_label = dftest['Timestamp'].iloc[i]
+            elif j == 1:
+                ha = 'center'
+                if dftest['result'].iloc[i] == 1:
+                    text_label = 'Correct'
+                    color = 'green'  # Set color to green for 'Correct'
+                else:
+                    text_label = 'Incorrect'
+                    color = 'red'
+            elif j == 2:
+                ha = 'center'
+                text_label = f'{dftest["reaction_time"].iloc[i] / 60:.2f}'
+            elif j == 3:
+                ha = 'center'
+                text_label = dftest['got_help'].iloc[i]
+            elif j == 4:
+                ha = 'center'
+                text_label = dftest['question'].iloc[i]
+            elif j == 5:
+                ha = 'center'
+                text_label = dftest['expected'].iloc[i]
+            elif j == 6:
+                ha = 'center'
+                text_label = dftest['received'].iloc[i]
+            else:
+                ha = 'center'
+                text_label = f'{dftest[column.lower().replace(" ", "_")].iloc[i]}'
+            ax6.annotate(
+                xy=(positions[j], i + .5),
+                text=text_label,
+                ha=ha,
+                va='center',
+                weight='normal'
+            )
+
+    # Add column names
+    column_names = ['Timestamp', 'Result', 'Reaction(min)', 'Got Help', 'Question', 'Expected',
+                    'Received']
+    for index, c in enumerate(column_names):
+        if index == 0:
+            ha = 'left'
+        else:
+            ha = 'center'
+        ax6.annotate(
+            xy=(positions[index], nrows + .25),
+            text=column_names[index],
+            ha=ha,
+            va='bottom',
+            weight='bold'
+        )
+
+    # Add dividing lines
+    ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [nrows, nrows], lw=1.5, color='black', marker='', zorder=4)
+    ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [0, 0], lw=1.5, color='black', marker='', zorder=4)
+    for x in range(1, nrows):
+        ax6.plot([ax6.get_xlim()[0], ax6.get_xlim()[1]], [x, x], lw=1.15, color='gray', ls=':', zorder=3, marker='')
+    ax6.set_title(f'Test Results')
+    ax6.set_axis_off()
 
 """
     page **** Summary Results ****
@@ -582,10 +1640,11 @@ def results_page(skip = False):
             widget.destroy()
         if ' Tests >' == widget.cget('text'):
             page_found = True
-    main_frame.grid_columnconfigure((2,3,4), weight=0)
-    main_frame.grid_columnconfigure((0, 1), weight=1)
-    main_frame.grid_rowconfigure((0,3,4), weight=0)
+    main_frame.grid_columnconfigure((0,1), weight=1)
     main_frame.grid_rowconfigure((1,2), weight=1)
+    main_frame.grid_columnconfigure((2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,3,4,5,6,7,8,9,10), weight=0)
+    
     customtkinter.CTkLabel(main_frame, text='Summary results', font=("consolas", 25, "underline")).grid(row=0, column=0, columnspan=2, sticky='EW', pady=10)
     customtkinter.CTkButton(main_frame, text='Test 1', font=("consolas bold", 25), command=test1_page).grid(row=1, column=0, ipadx=50, ipady=50)
     customtkinter.CTkButton(main_frame, text='Test 2', font=("consolas bold", 25), command=test2_page).grid(row=1, column=1, ipadx=50, ipady=50)
@@ -596,10 +1655,17 @@ def results_page(skip = False):
 """
     page **** Visit ****
 """
-def show_treatment(treatment_id, skip = False):
-    global start_date_open, end_date_open, table_visit, visit_data
+treatment_id = None
+def show_treatment(treatment_id_, skip = False):
+    global start_date_open, end_date_open, table_visit, visit_data, treatment_id, table_rec, table_ref
+    if not treatment_id_ and not treatment_id:
+        messagebox.showerror('Error', 'No patient selected. Please select a patient from the table first')
+        return
+    if treatment_id_:
+        treatment_id = treatment_id_
     for widgets in main_frame.winfo_children():
         widgets.destroy()
+    create_menu('show_treatment')
 
     if not skip:
         l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Treatment >', font=("consolas", breadcrumbs_size))
@@ -614,10 +1680,10 @@ def show_treatment(treatment_id, skip = False):
         if ' Treatment >' == widget.cget('text'):
             page_found = True
     
-    main_frame.grid_columnconfigure((0,2,3,4), weight=0)
     main_frame.grid_columnconfigure(1, weight=1)
-    main_frame.grid_rowconfigure((0,1,2,3), weight=0)
     main_frame.grid_rowconfigure(4, weight=1)
+    main_frame.grid_columnconfigure((0,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,1,2,3,5,6,7,8,9,10), weight=0)
     current_treatment = dc.get_treatment_by_id(treatment_id)
     patient_id = int(current_treatment[2])
     current_patient = dc.get_patient_by_id(patient_id)
@@ -628,11 +1694,11 @@ def show_treatment(treatment_id, skip = False):
     p_label.grid(row=0, column=0, padx=(25,0), sticky='W', pady=(25,5))
 
     treat_label = customtkinter.CTkLabel(main_frame,
-                    text=current_treatment[1],
-                    font=("consolas", 20))
+        text=str(calculate_age(datetime.datetime.strptime(current_patient[3], '%m/%d/%Y').date()))+' years old',
+        font=("consolas", 20))
     treat_label.grid(row=1, column=0, padx=(80,0), sticky='W', pady=(0,25))
 
-    customtkinter.CTkButton(main_frame, text='results', font=("consolas", 20), command=results_page).grid(row=0, rowspan=2, column=1, padx=(0,60), sticky='E')
+    # customtkinter.CTkButton(main_frame, text='results', font=("consolas", 20), command=results_page).grid(row=0, rowspan=2, column=1, padx=(0,60), sticky='E')
 
     # treat_label = Label(main_frame,
     #                     text=treatment_id,
@@ -643,19 +1709,28 @@ def show_treatment(treatment_id, skip = False):
                     text='Visits Summary',
                     font=("consolas", 15))
     p_label.grid(row=2, column=1, sticky='W', padx=(25,0))
-
-    frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
-    frm.grid(row=3, column=1, pady=(20,10), padx=(0, 50), sticky='EW')
+    visit_data = dc.get_visits(treatment_id, sort=var_visitsort.get())
+    # new_id, name, treatment_id, date, summary, attention_level, external_source
+    frame_tables = customtkinter.CTkFrame(main_frame)
+    frame_tables.grid(row=3, column=1, sticky='NSEW', padx=(0,50), pady=(0,20))
+    frame_tables.grid_rowconfigure((2,4), weight=1)
+    frame_tables.grid_columnconfigure((0,1), weight=1)
+    frm = customtkinter.CTkFrame(frame_tables, fg_color='#2b2b2b')
+    frm.grid(row=0, column=0, sticky='EW')
     customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20))
     customtkinter.CTkEntry(frm, textvariable=var_visitfilter, width=200).pack(side='left', padx=10)
     var_visitfilter.trace_add('write', filter_visit)
-    customtkinter.CTkOptionMenu(frm, values=["ID", "Date", "Visit Type", "Attention Level"], variable=var_visitoption, command=filter_visit).pack(side='left', padx=10)
-    customtkinter.CTkOptionMenu(frm, values=["ID", "Date", "Visit Type", "Attention Level"], variable=var_visitsort, command=filter_visit).pack(side='right', padx=10)
+    customtkinter.CTkOptionMenu(frm, values=("ID", "Date", "Reports", "Attention Level", "Recommendation", "Recommendation Date", "Reference", "Reference Date"), variable=var_visitoption, command=filter_visit).pack(side='left', padx=10)
+    customtkinter.CTkOptionMenu(frm, values=("ID", "Date", "Reports", "Attention Level", "Recommendation", "Recommendation Date", "Reference", "Reference Date"), variable=var_visitsort, command=filter_visit).pack(side='right', padx=10)
     customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
-    visit_data = dc.get_visits(treatment_id, sort=var_visitsort.get())
-    # new_id, name, treatment_id, date, summary, attention_level, external_source
-    table_visit = customtkinter.CTkScrollableFrame(main_frame, orientation='vertical', fg_color='#2b2b2b')
-    table_visit.grid(row=4, column=1, sticky='NSEW', padx=(0,50), pady=(0,20))
+    table_visit = customtkinter.CTkScrollableFrame(frame_tables, orientation='vertical', fg_color='#2b2b2b')
+    table_visit.grid(row=1, column=0, rowspan=4, sticky='NSEW', padx=(0,0))
+    customtkinter.CTkLabel(frame_tables, text='Recommendations', font=('consolas', 20)).grid(row=1, column=1, sticky='EW')
+    table_rec = customtkinter.CTkScrollableFrame(frame_tables, orientation='vertical', fg_color='#2b2b2b')
+    table_rec.grid(row=2, column=1, sticky='NSEW')
+    customtkinter.CTkLabel(frame_tables, text='References', font=('consolas', 20)).grid(row=3, column=1, sticky='EW')
+    table_ref = customtkinter.CTkScrollableFrame(frame_tables, orientation='vertical', fg_color='#2b2b2b')
+    table_ref.grid(row=4, column=1, sticky='NSEW')
     #table_visit.grid_columnconfigure((0,1,2,3,4,5), weight=1)
     fill_visit(table_visit, visit_data)
     
@@ -756,12 +1831,12 @@ def show_treatment(treatment_id, skip = False):
     start_date_label.config(text=f'{current_treatment[3]}\t\t\t')
 
     end_frame = customtkinter.CTkFrame(left_frame, fg_color='#2b2b2b')
-    end_frame.pack()
+    #end_frame.pack()
 
     end_label = customtkinter.CTkLabel(end_frame,
                       text='End Treatment',
                       font=("consolas", 25))
-    end_label.pack()
+    #end_label.pack()
 
     end_date_label = Label(end_frame,
                            text="d/mm/yy\t\t\t",
@@ -773,7 +1848,7 @@ def show_treatment(treatment_id, skip = False):
                            anchor="w",
                            borderwidth=4,
                            relief="groove")
-    end_date_label.pack(fill='x')
+    #end_date_label.pack(fill='x')
     end_date_label.image = date_img
     end_date_label.image = date_img
     end_date_label.bind("<Button-1>", pick_end_date)
@@ -785,15 +1860,22 @@ def show_treatment(treatment_id, skip = False):
     summary_label.pack()
 
     summary_text_area = customtkinter.CTkTextbox(master=left_frame,
-                                                 border_width=2)
+                                                 border_width=2, state='disabled')
     summary_text_area.pack(fill='x')
-    summary_text_area.insert("1.0", current_treatment[-1])
+    if current_treatment[5]:
+        summary_text_area.insert("1.0", current_treatment[5])
+    delete_treatment_button = customtkinter.CTkButton(master=left_frame,
+                                                   text='End Treatment',
+                                                   font=("consolas",
+                                                         15, "bold"),
+                                                   height=50,
+                                                   command=lambda: end_treatment(treatment_id))
+    delete_treatment_button.pack(pady=(50,0))
 
     bottom_frame = customtkinter.CTkFrame(master=main_frame, fg_color='#2b2b2b')
-    bottom_frame.grid(row=5, column=0, columnspan=2, pady=(15, 15), sticky='EW')
+    bottom_frame.grid(row=1, column=0, columnspan=2, pady=(15, 15), sticky='EW')
 
-    new_visit_butt = customtkinter.CTkButton(master=bottom_frame,
-                                             text="New Visit",
+    new_visit_butt = customtkinter.CTkButton(master=bottom_frame,text="New Visit",
                                              height=50,
                                              command=new_visit)
     new_visit_butt.pack(expand=True, side='left')
@@ -810,7 +1892,7 @@ def show_treatment(treatment_id, skip = False):
                                              text="Delete Visit",
                                              height=50,
                                              command=delete_visit)
-    delete_visit_butt.pack(expand=True, side='left')    
+    #delete_visit_butt.pack(expand=True, side='left')    
 
     close_treatment_butt = customtkinter.CTkButton(master=bottom_frame,
                                                    text="Close treatment",
@@ -818,9 +1900,14 @@ def show_treatment(treatment_id, skip = False):
                                                    command=close_treatment)
     close_treatment_butt.pack(expand=True, side='left')
 
+def end_treatment(treatment_id):
+    if messagebox.askyesno('End Treatment', 'Are you sure you want to end this treatment and archive it?'):
+        dc.archive_treatment(treatment_id)
+        patient()
 
-def delete_visit():
-    dialog = customtkinter.CTkInputDialog(text="Type ID of visit to be deleted:", title="Delete visit")
+
+def delete_visit(visit_id):
+    """dialog = customtkinter.CTkInputDialog(text="Type ID of visit to be deleted:", title="Delete visit")
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
@@ -834,7 +1921,9 @@ def delete_visit():
         if not name:
             messagebox.showerror('Error', 'ID of Visit not found.')
         elif messagebox.askyesno('Delete Visit', f'Are you sure you want to delete the visit with type {name}?') and dc.remove_visit(int(text)):
-            show_treatment(treatment_id)
+            show_treatment(treatment_id)"""
+    if messagebox.askyesno('Delete Visit', f'Are you sure you want to delete this visit?') and dc.remove_visit(visit_id):
+        show_treatment(treatment_id)
 
 
 def update_visit(visit_id, visit_name, visit_date, summary, attention_level, external_source):
@@ -843,27 +1932,8 @@ def update_visit(visit_id, visit_name, visit_date, summary, attention_level, ext
     else:
         new_date = datetime.datetime.strptime(visit_date, "%m/%d/%y").strftime("%m/%d/%Y")
         dc.update_visit(visit_id, visit_name, new_date, summary, attention_level, external_source)
-        close_visit()
         show_treatment(treatment_id)
 
-def close_visit():
-    global edit_visit_visible
-    edit_visit_visible = False
-    edit_visit_window.destroy()
-
-def edit_visit():
-    global edit_visit_visible, edit_visit_window
-    dialog = customtkinter.CTkInputDialog(text="Type ID of visit to be edited:", title="Edit visit")
-    text = dialog.get_input()  # waits for input
-    if not text.isdigit():
-        messagebox.showerror('Error', 'ID must be a number.')
-    else:
-        visit = dc.get_visit_by_id(int(text))
-        if not visit:
-            messagebox.showerror('Error', 'ID of visit not found.')
-        else:
-            open_edit_visit(visit)
-            #window.after(100, edit_visit_window.focus)
 
 def open_edit_visit(visit):
     if visit[7] == 'from another source':
@@ -871,49 +1941,6 @@ def open_edit_visit(visit):
     elif visit[7] == 'summary':
         new_summary(visit_id, True)
 
-"""
-edit_visit_visible = False
-def open_edit_visit(visit):
-    global edit_visit_visible, edit_visit_window
-    if not edit_visit_visible:
-        edit_visit_visible = True
-        edit_visit_window = customtkinter.CTkToplevel()
-        edit_visit_window.title('Visit')
-        edit_visit_window.resizable(False, False)
-        customtkinter.CTkLabel(edit_visit_window, text="Visit Name:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
-        entry_visit_name = customtkinter.CTkEntry(edit_visit_window)
-        entry_visit_name.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
-        entry_visit_name.insert(0, visit[1])
-        customtkinter.CTkLabel(edit_visit_window, text="Date:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        cal = Calendar(edit_visit_window, selectmode="day", year=2023, month=1, day=1)
-        cal.grid(row=1, column=1, padx=10, pady=10, sticky="e")
-        cal.selection_set(visit[3])
-        customtkinter.CTkLabel(edit_visit_window, text="Summary:").grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        summary = customtkinter.CTkTextbox(edit_visit_window)
-        summary.grid(row=2, column=1, padx=10, pady=10, sticky="e")
-        summary.insert("1.0", visit[4])
-        customtkinter.CTkLabel(edit_visit_window, text="Attention Level:").grid(row=3, column=0, padx=10, pady=10, sticky="w")
-        entry_attention_level = customtkinter.CTkEntry(edit_visit_window)
-        entry_attention_level.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
-        entry_attention_level.insert(0, visit[5])
-        customtkinter.CTkLabel(edit_visit_window, text="External Source:").grid(row=4, column=0, padx=10, pady=10, sticky="w")
-        entry_external_source = customtkinter.CTkEntry(edit_visit_window)
-        entry_external_source.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
-        entry_external_source.insert(0, visit[6])
-        submit_button = customtkinter.CTkButton(edit_visit_window, 
-            text='Submit',
-            command=lambda:update_visit(
-                visit[0],
-                entry_visit_name.get(), 
-                cal.get_date(), 
-                summary.get("1.0", END).rstrip('\n'), 
-                entry_attention_level.get(), 
-                entry_external_source.get()
-            )
-        )
-        edit_visit_window.protocol("WM_DELETE_WINDOW", close_visit) 
-        submit_button.grid(row=5, column=0, columnspan=2, padx=20, pady=15, sticky="s")
-"""
 
 def on_row_click_patient(event):
     global patient_id
@@ -930,9 +1957,9 @@ def on_row_edit_patient(event):
     patient = dc.get_patient_by_id(patient_id)
     if not add_patient_opened:
         edit_patient_opened = True
-        edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], birth_date=patient[3], phone=patient[4], email=patient[5], mode='edit')
+        edit_patient_window = PatientWindow(patient_id=patient[0], first_name=patient[1], last_name=patient[2], 
+            birth_date=patient[3], phone=patient[4], email=patient[5], mode='edit')
     window.after(100, edit_patient_window.focus)
-
 
 def on_row_click_treatment(event):
     global treatment_id
@@ -940,9 +1967,6 @@ def on_row_click_treatment(event):
     row_index = event.widget.grid_info()['row']
     treatment_id = treatment_data[row_index-1][0]
     show_treatment(treatment_id)
-
-
-
 
 """
 # New treatment button
@@ -1093,9 +2117,9 @@ def start_test(skip = False):
             page_found = True
     
     main_frame.grid_columnconfigure((0), weight=1)
-    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
     main_frame.grid_rowconfigure(2, weight=1)
-    main_frame.grid_rowconfigure((0,1,3,4), weight=0)
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,1,3,4,5,6,7,8,9,10), weight=0)
     # Back Button
     back_button = customtkinter.CTkButton(master=main_frame,
                                           text="Back",
@@ -1105,7 +2129,7 @@ def start_test(skip = False):
     back_button.grid(row=0, column=0, sticky='W', padx=(20,0), pady=(20,0))
 
     p_label2 = customtkinter.CTkLabel(main_frame,
-                     text='Conor CPT test:', anchor='w',
+                     text='Test:', anchor='w',
                      font=("consolas", 25))
     p_label2.grid(row=1, column=0, padx=50, pady=(25,0), sticky='W')
 
@@ -1123,20 +2147,20 @@ def start_test(skip = False):
     inst_frame = customtkinter.CTkFrame(frm, fg_color='#242424', corner_radius=15)
     inst_frame.pack(expand=True, fill='x')
 
-    inst_text1 = customtkinter.CTkLabel(inst_frame,
-                       text="Instructions:",
+    """inst_text1 = customtkinter.CTkLabel(inst_frame,
+                       text="Instructions :",
                        font=("consolas", 15, "bold", "underline"), anchor='w')
     inst_text1.pack(fill='x', pady=(15,0), padx=20)
 
     inst_text2 = customtkinter.CTkLabel(inst_frame,
                        text="Press Space \n when the \n correct\n shape appears",
                        font=("consolas", 15))
-    inst_text2.pack(expand=True, pady=(0,15), padx=20)
+    inst_text2.pack(expand=True, pady=(0,15), padx=20)"""
 
     end_butt = customtkinter.CTkButton(master=frm,
-                                       text="Show BCI Results",
+                                       text="End Test",
                                        font=("consolas", 20),
-                                       command=test_results)
+                                       command=lambda: end_test(treatment_id, True))
     end_butt.pack(side='bottom')
     #
     # toggle_text = Label(main_frame,
@@ -1175,7 +2199,29 @@ def start_test(skip = False):
     #
     # off_label.bind("<Button-1>", on_off)
 
-
+"""
+End Test
+"""
+def end_test(treatment_id, skip):
+    import glob
+    import os
+    # get files
+    files = glob.glob('*_test.csv')
+    if files:
+        lid = dc.get_last_visit_id()[0]
+        for f in files:
+            print(f)
+            df = pd.read_csv(f)
+            df['visit_id'] = lid
+            df.to_sql(name="blc_tests", con=conn, if_exists='append')
+            # delete file
+            os.remove(r'!'.replace('!', f))
+        # get all the records of the visit id
+        df = pd.read_sql_query(f"SELECT * FROM blc_tests WHERE visit_id={lid}", conn)
+        attention_level = df['Attention'].mean()
+        if attention_level:
+            dc.update_attention(lid, attention_level)
+    show_treatment(treatment_id, skip)
 
 """
     page **** home *****
@@ -1237,17 +2283,21 @@ def on_leave(labels):
         try:
             label.configure(bg='#242424')
         except:
-            label.configure(bg_color="#242424")
+            try:
+                label.configure(bg_color="#242424")
+            except:
+                pass
 
 def fill_patients(table, data):
+    global edit_img
+    edit_img = ImageTk.PhotoImage(Image.open('images/edit.png').resize((30,30)))
     for child in table.winfo_children():
         child.grid_forget()
     column = ("ID", "First Name", "Last Name", "Date of Birth", "Edit")
     for i in range(len(data)):
         new_row = list(data[i])
         new_row.pop()
-        new_row.pop()
-        new_row.append('Edit Patient')
+        #new_row.append('Edit Patient')
         data[i] = new_row
     for col, heading in enumerate(column):
         Label(table,
@@ -1265,7 +2315,23 @@ def fill_patients(table, data):
         labels = []
         record = list(record)
         for col, value in enumerate(record):
-            if col == 4 or col == 1:
+            if col == 4:
+                label = Label(table,
+                    #text=value,
+                    padx=40,
+                    pady=30,
+                    borderwidth=2,
+                    image=edit_img,
+                    #font=('Orega One', text_size, 'underline'),
+                    relief="solid",
+                    highlightbackground='black',
+                    fg='white',
+                    bg='#242424')
+
+                table.grid_columnconfigure(col, weight=1)
+                table.grid_rowconfigure(row, weight=1)
+                label.grid(row=row, column=col, sticky="nsew")
+            elif col == 1:
                 label = Label(table,
                     text=value,
                     padx=40,
@@ -1321,6 +2387,43 @@ def close_menu(label_menu):
     frm_menu.grid_forget()
 
 """
+    page **** Archive Treatments ****
+"""
+def archive_treatments(skip = False):
+    global table_treatment
+    for widgets in main_frame.winfo_children():
+        widgets.destroy()
+    if not skip:
+        l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Archive Treatments >', font=("consolas", breadcrumbs_size))
+        l.pack(side='left')
+        l.bind('<Button-1>', lambda e: archive_treatments(skip=True))
+        l.bind('<Enter>', lambda e, labels=[l]: on_enter(labels))
+        l.bind('<Leave>', lambda e, labels=[l]: on_leave(labels))
+    page_found = False
+    for widget in frame_breadcrumbs.winfo_children():
+        if page_found:
+            widget.destroy()
+        if ' Archive Treatments >' == widget.cget('text'):
+            page_found = True
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure(1, weight=1)
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,2,3,4,5,6,7,8,9,10), weight=0)
+    frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
+    frm.grid(row=0, column=0, pady=(20,10), padx=(0,50), sticky='EW')
+    customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20)).pack(side='left', padx=10)
+    customtkinter.CTkEntry(frm, textvariable=var_treatmentfilter, width=200).pack(side='left', padx=10)
+    var_treatmentfilter.trace_add('write', filter_treatment)
+    customtkinter.CTkOptionMenu(frm, values=["Treatment ID", "Patient Name", "Start Date", "End Date"], variable=var_treatmentoption, command=filter_treatment).pack(side='left', padx=10)
+    customtkinter.CTkOptionMenu(frm, values=["Treatment ID", "Patient Name", "Start Date", "End Date"], variable=var_treatmentsort, command=filter_treatment).pack(side='right', padx=10)
+    customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
+    table_treatment = customtkinter.CTkScrollableFrame(main_frame)
+    table_treatment.grid(row=1, column=0, sticky='NSEW', padx=(10, 50), pady=(0,50))
+    table_treatment.grid_rowconfigure(0, weight=1)
+    treatment_data = dc.get_treatments(patient_id, sort=var_treatmentsort.get())
+    fill_treatments(table_treatment, treatment_data)
+
+"""
     page **** Patient ****
 """
 def patient(event = None):
@@ -1356,13 +2459,17 @@ def patient(event = None):
 
     data = dc.get_patients(sort=var_patientsort.get())
     frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
-    frm.pack(pady=(50,10), padx=50, fill='x')
+    frm.pack(pady=(10,10), padx=50, fill='x')
+    customtkinter.CTkButton(frm, text='Archive treatments', command=archive_treatments, font=('consolas', 20)).pack(side='right', padx=10)
+    frm = customtkinter.CTkFrame(main_frame, fg_color='#2b2b2b')
+    frm.pack(pady=(25,10), padx=50, fill='x')
     customtkinter.CTkLabel(frm, text='Search', font=('consolas', 20)).pack(side='left', padx=10)
     customtkinter.CTkEntry(frm, textvariable=var_filter, width=200).pack(side='left', padx=10)
     var_filter.trace_add('write', filter_patient)
     customtkinter.CTkOptionMenu(frm, values=['ID', 'First Name', 'Last Name', 'Date of Birth'], variable=var_patientoption, command=filter_patient).pack(side='left', padx=10)
     customtkinter.CTkOptionMenu(frm, values=['ID', 'First Name', 'Last Name', 'Date of Birth'], variable=var_patientsort, command=filter_patient).pack(side='right', padx=10)
     customtkinter.CTkLabel(frm, text='Sort by', font=('consolas', 20)).pack(side='right', padx=10)
+    customtkinter.CTkLabel(main_frame, text='Active Patients', font=('consolas', 30)).pack(fill='x', padx=50, pady=(5,0))
     table_patient = customtkinter.CTkScrollableFrame(main_frame)
     table_patient.pack(expand=True, fill='both', padx=50, pady=(0,50))
 
@@ -1385,7 +2492,7 @@ def patient(event = None):
                                                        15, "bold"),
                                                  height=50,
                                                  command=delete_patient)
-    delete_patient_button.pack(expand=True, side='left')
+    #delete_patient_button.pack(expand=True, side='left')
 
     """
     edit_patient_button = customtkinter.CTkButton(master=frm,
@@ -1424,8 +2531,9 @@ def confirm_edit_patient(patient_id, first_name, last_name, phone, email, birth_
         close_patient(edit_patient_window, 'edit')
         patient()
 
-def delete_patient():
-    dialog = customtkinter.CTkInputDialog(text="Type ID of patient to be deleted:", title="Delete patient")
+def delete_patient(patient_id):
+    global edit_patient_window
+    """dialog = customtkinter.CTkInputDialog(text="Type ID of patient to be deleted:", title="Delete patient")
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
@@ -1439,7 +2547,18 @@ def delete_patient():
         if not name:
             messagebox.showerror('Error', 'ID of patient not found.')
         elif messagebox.askyesno('Delete Patient', f'Are you sure you want to delete the patient {name}?') and dc.remove_patient(int(text)):
-            patient()
+            patient()"""
+    patients = dc.get_patients(sort=var_patientsort.get())
+    name = ''
+    for item in patients:
+        if item[0] == patient_id:
+            name = f"{item[1]} {item[2]}"
+            break
+    if messagebox.askyesno('Delete Patient', f'Are you sure you want to delete the patient {name}?') and dc.remove_patient(patient_id):
+        patient()
+        edit_patient_window.destroy()
+    else:
+        edit_patient_window.after(100, edit_patient_window.focus)
 
 def close_patient(window, mode = 'add'):
     global add_patient_opened, edit_patient_opened
@@ -1450,11 +2569,12 @@ def close_patient(window, mode = 'add'):
     window.destroy()
 
 class PatientWindow(customtkinter.CTkToplevel):
-    def __init__(self, first_name = None, last_name = None, phone = None, email = None, birth_date = None, mode = 'add', patient_id = None,*args, **kwargs):
+    def __init__(self, first_name = None, last_name = None, phone = None, email = None, birth_date = None, 
+        mode = 'add', patient_id = None, start_date = None,*args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title('Patient')
         self.protocol("WM_DELETE_WINDOW", lambda:close_patient(self, mode))
-        self.geometry("500x450")
+        self.geometry("500x750")
         self.resizable(False, False)  
         label_first_name = customtkinter.CTkLabel(self, text="First Name:")
         label_first_name.grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -1487,8 +2607,16 @@ class PatientWindow(customtkinter.CTkToplevel):
 
         self.cal = Calendar(self, selectmode="day", year=2000, month=1, day=1, font='consolas 15')
         self.cal.grid(row=4, column=1, padx=10, pady=10, sticky="NSEW")
+
+        label_start = customtkinter.CTkLabel(self, text="Start Treatment:")
+        label_start.grid(row=5, column=0, padx=10, pady=10, sticky="w")
+
+        self.cal_start = Calendar(self, selectmode="day", year=2023, month=7, day=1, font='consolas 15')
+        self.cal_start.grid(row=5, column=1, padx=10, pady=10, sticky="NSEW")
+
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(4, weight=1)
+        self.grid_rowconfigure(5, weight=1)
         if first_name:
             self.entry_first_name.insert(0, first_name)
             self.entry_last_name.insert(0, last_name)
@@ -1497,26 +2625,36 @@ class PatientWindow(customtkinter.CTkToplevel):
             if email:
                 self.entry_email.insert(0, email)
             self.cal.selection_set(birth_date)
-        self.submit_button = customtkinter.CTkButton(self, 
+            self.cal_start.selection_set(start_date)
+        if mode == 'edit':
+            f = customtkinter.CTkFrame(self, fg_color='#242424')
+            f.grid(row=6, column=0, columnspan=2, sticky="nsew")
+            self.submit_button = customtkinter.CTkButton(f, 
+                text='Submit',
+                command=lambda:confirm_edit_patient(
+                    patient_id=patient_id,
+                    first_name=self.entry_first_name.get(),
+                    last_name=self.entry_last_name.get(),
+                    phone=self.entry_phone.get(),
+                    email=self.entry_email.get(),
+                    birth_date=self.cal.get_date()
+            ))
+            f.grid_columnconfigure((0, 1), weight=1)
+            self.delete_button = customtkinter.CTkButton(f, text='Delete', command=lambda:delete_patient(patient_id=patient_id))
+            self.delete_button.grid(row=0, column=0, pady=15, sticky="s")
+            self.submit_button.grid(row=0, column=1, pady=15, sticky="s")
+        else:
+            self.submit_button = customtkinter.CTkButton(self, 
             text='Submit', 
             command=lambda:submit_patient(
                 self.entry_first_name.get(), 
                 self.entry_last_name.get(),
                 self.entry_phone.get(),
                 self.entry_email.get(),
-                self.cal.get_date()
+                self.cal.get_date(),
+                self.cal_start.get_date()
             ))
-        if mode == 'edit':
-            self.submit_button.configure(command=lambda:confirm_edit_patient(
-                patient_id=patient_id,
-                first_name=self.entry_first_name.get(),
-                last_name=self.entry_last_name.get(),
-                phone=self.entry_phone.get(),
-                email=self.entry_email.get(),
-                birth_date=self.cal.get_date()
-            ))
-        self.submit_button.grid(row=5, column=0, columnspan=2, padx=20, pady=15, sticky="s")
-
+            self.submit_button.grid(row=6, column=0, columnspan=2, padx=20, pady=15, sticky="s")
 
 add_patient_opened = add_patient_window = edit_patient_opened = edit_patient_window = False
 def add_patient():
@@ -1526,15 +2664,15 @@ def add_patient():
         add_patient_window = PatientWindow()
     window.after(100, add_patient_window.focus)
 
-
-def submit_patient(first_name, last_name, phone, email, birth_date):
+def submit_patient(first_name, last_name, phone, email, birth_date, treatment_date):
     global add_patient_window
     if not first_name or not last_name:
         messagebox.showerror('Error', 'Please enter all the information of the patient.', master=add_patient_window)
         add_patient_window.focus()
     else:
         new_date = datetime.datetime.strptime(birth_date, "%m/%d/%y").strftime("%m/%d/%Y")
-        dc.add_patient(first_name, last_name, phone, email, new_date)
+        start_treatment = datetime.datetime.strptime(birth_date, "%m/%d/%y").strftime("%m/%d/%Y")
+        dc.add_patient(first_name, last_name, phone, email, new_date, start_treatment)
         close_patient(add_patient_window)
         patient()
 
@@ -1545,12 +2683,20 @@ def filter_treatment(*args):
     fill_treatments(table_treatment, data)
 
 def fill_treatments(table, data):
+    new_data = []
+    for row in data:
+        row = list(row)
+        concatenated_value = row[1] + ' ' + row[2]
+        new_row = row[:1] + [concatenated_value] + row[3:]
+        new_data.append(new_row)
+    data = new_data
+    global edit_img
+    edit_img = ImageTk.PhotoImage(Image.open('images/edit.png').resize((30,30)))
     for child in table.winfo_children():
         child.grid_forget()
-    column = ("Treatment ID", "Treatment Name", "Patient ID", "Start Date", "End Date", "Summary", "Edit")
+    column = ("Treatment ID", "Patient Name", "Start Date", "End Date")
     for i in range(len(data)):
         new_row = list(data[i])
-        new_row.append('Edit Treatment')
         data[i] = new_row
     for col, heading in enumerate(column):
         Label(table,
@@ -1566,38 +2712,9 @@ def fill_treatments(table, data):
         table.grid_columnconfigure(col, weight=1)
 
     for row, record in enumerate(data, start=1):
-        labels = []
         table.grid_rowconfigure(row, weight=1)
         for col, value in enumerate(record):
-            # If name of treatment (col 0)
-            if col == 6:
-                info = Label(table,
-              text=value,
-              padx=40,
-              pady=30,
-              borderwidth=2,
-              font=('Orega One', text_size, "underline"),
-              relief="solid",
-              highlightbackground='black',
-              fg='white',
-              bg='#242424')
-                info.grid(row=row, column=col, sticky="nsew")
-                info.bind("<Button-1>", on_row_edit_treatment)
-            elif col == 1:
-                info = Label(table,
-              text=value,
-              padx=40,
-              pady=30,
-              borderwidth=2,
-              font=('Orega One', text_size, "underline"),
-              relief="solid",
-              highlightbackground='black',
-              fg='white',
-              bg='#242424')
-                info.grid(row=row, column=col, sticky="nsew")
-                info.bind('<Button-1>', on_row_click_treatment)
-            else:
-                info = Label(table,
+            info = Label(table,
               text=value,
               padx=40,
               pady=30,
@@ -1607,11 +2724,7 @@ def fill_treatments(table, data):
               highlightbackground='black',
               fg='white',
               bg='#242424')
-                info.grid(row=row, column=col, sticky="nsew")
-            labels.append(info)
-            if col == 1 or col == 6:
-                info.bind('<Enter>', lambda e, labels=labels:on_enter(labels))
-                info.bind('<Leave>', lambda e, labels=labels:on_leave(labels))
+            info.grid(row=row, column=col, sticky="nsew")
 
 def on_row_edit_treatment(event):
     global edit_treatment_window, add_treatment_opened
@@ -1621,7 +2734,6 @@ def on_row_edit_treatment(event):
     edit_treatment_window = TreatmentWindow(treatment_id=treatment[0], patient_id=treatment[2], treatment_name=treatment[1], 
                 start_date=treatment[3], end_date=treatment[4], summary=treatment[5])
     window.after(100, edit_treatment_window.focus)
-
 
 def calculate_age(birth_date):
     today = datetime.date.today()
@@ -1654,7 +2766,6 @@ def patientinfo(event = None):
                 size=(25,25)), text='')
         label_menu.bind('<Button-1>', lambda e: close_menu(label_menu))
     label_menu.grid(row=0, column=0, padx=(15,0), pady=5, sticky='W')
-    create_menu('patient_info')
     l = customtkinter.CTkLabel(frame_breadcrumbs, text=' Patient Info >', font=("consolas", breadcrumbs_size))
     l.pack(side='left')
     l.bind('<Button-1>', patientinfo_click)
@@ -1667,9 +2778,9 @@ def patientinfo(event = None):
         if ' Patient Info >' == widget.cget('text'):
             page_found = True
     main_frame.grid_columnconfigure(1, weight=1)
-    main_frame.grid_columnconfigure((0,2,3,4), weight=0)
     main_frame.grid_rowconfigure(2, weight=1)
-    main_frame.grid_rowconfigure((0,1,3,4), weight=0)
+    main_frame.grid_columnconfigure((0,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((0,1,3,4,5,6,7,8,9,10), weight=0)
     p_label = customtkinter.CTkLabel(main_frame,
                     # fullname
                     text=current_patient[1] + " " + current_patient[2],
@@ -1721,7 +2832,7 @@ def patientinfo(event = None):
                                                          15, "bold"),
                                                    height=50,
                                                    command=lambda: new_treatment(patient_id))
-    new_treatment_button.pack(expand=True, side='left')
+    #new_treatment_button.pack(expand=True, side='left')
 
     delete_treatment_button = customtkinter.CTkButton(master=frm,
                                                  text='Delete Treatment',
@@ -1729,7 +2840,8 @@ def patientinfo(event = None):
                                                        15, "bold"),
                                                  height=50,
                                                  command=delete_treatment)
-    delete_treatment_button.pack(expand=True, side='left')
+    #delete_treatment_button.pack(expand=True, side='left')
+    
 
     """
     edit_treatment_button = customtkinter.CTkButton(master=frm,
@@ -1740,7 +2852,6 @@ def patientinfo(event = None):
                                                  command=edit_treatment)
     edit_treatment_button.pack(expand=True, side='left')
     """
-
 
 def add_treatment(treatment_name, patient_id, start_date, end_date, summary):
     start_date = datetime.datetime.strptime(start_date, "%m/%d/%y").strftime("%d/%m/%Y")
@@ -1773,19 +2884,29 @@ class TreatmentWindow(customtkinter.CTkToplevel):
         customtkinter.CTkLabel(self, text="Summary:").grid(row=5, column=0, padx=10, pady=10, sticky="w")
         self.summary = customtkinter.CTkTextbox(self, border_color='#4d5254', fg_color='#343638', border_width=2)
         self.summary.grid(row=5, column=1, padx=10, pady=10, sticky="NSEW")
-        self.submit_button = customtkinter.CTkButton(self, 
-            text='Submit',
-            command=self.add_treatment
-        )
         self.protocol("WM_DELETE_WINDOW", lambda:self.close_treatment("add")) 
         if treatment_name:
+            f = customtkinter.CTkFrame(self, fg_color='#242424')
+            f.grid(row=6, column=0, columnspan=2, sticky="nsew")
+            f.grid_columnconfigure((0,1), weight=1)
+            self.submit_button = customtkinter.CTkButton(f, 
+                text='Submit',
+                command=self.edit_treatment
+            )
+            self.delete_button = customtkinter.CTkButton(f, text='Delete', command=lambda:delete_treatment(self.treatment_id))
+            self.delete_button.grid(row=0, column=0, pady=15)
+            self.submit_button.grid(row=0, column=1, pady=15)
             self.protocol("WM_DELETE_WINDOW", lambda:self.close_treatment("edit")) 
             self.entry_treatment_name.insert(0, treatment_name)
             self.calstart.selection_set(start_date)
             self.calend.selection_set(end_date)
             self.summary.insert("1.0", summary)
-            self.submit_button.configure(command=self.edit_treatment)
-        self.submit_button.grid(row=6, column=0, columnspan=2, padx=20, pady=15, sticky="s")
+        else:
+            self.submit_button = customtkinter.CTkButton(self, 
+            text='Submit',
+            command=self.add_treatment
+        )
+            self.submit_button.grid(row=6, column=0, columnspan=2, padx=20, pady=15, sticky="s")
 
     
     def update_treatmentdate(self, e):
@@ -1839,7 +2960,6 @@ class TreatmentWindow(customtkinter.CTkToplevel):
             treatment_window_visible = False
             patientinfo()
         
-
 treatment_window_visible = False
 def new_treatment(patient_id):
     global treatment_window_visible, treatment_window
@@ -1848,8 +2968,9 @@ def new_treatment(patient_id):
         treatment_window_visible = True
     window.after(100, treatment_window.focus)
 
-def delete_treatment():
-    dialog = customtkinter.CTkInputDialog(text="Type ID of treatment to be deleted:", title="Delete treatment")
+def delete_treatment(treatment_id):
+    global edit_treatment_window
+    """dialog = customtkinter.CTkInputDialog(text="Type ID of treatment to be deleted:", title="Delete treatment")
     text = dialog.get_input()  # waits for input
     if not text.isdigit():
         messagebox.showerror('Error', 'ID must be a number.')
@@ -1863,8 +2984,18 @@ def delete_treatment():
         if not name:
             messagebox.showerror('Error', 'ID of treatment not found.')
         elif messagebox.askyesno('Delete Treatment', f'Are you sure you want to delete the treatment {name}?') and dc.remove_treatment(int(text)):
-            patientinfo()
-
+            patientinfo()"""
+    treatments = dc.get_treatments(patient_id, sort=var_treatmentsort.get())
+    name = ''
+    for item in treatments:
+        if item[0] == treatment_id and item[2] == patient_id:
+            name = f"{item[1]}"
+            break
+    if messagebox.askyesno('Delete Treatment', f'Are you sure you want to delete the treatment {name}?') and dc.remove_treatment(treatment_id):
+        patientinfo()
+        edit_treatment_window.destroy()
+    else:
+        edit_treatment_window.after(100, edit_treatment_window.focus)
 
 edit_treatment_visible = False
 def edit_treatment():
@@ -1884,9 +3015,7 @@ def edit_treatment():
                     start_date=treatment[3], end_date=treatment[4], summary=treatment[5])
             window.after(100, edit_treatment_window.focus)
 
-
-def BCI_data():
-
+def BCI_data(frame):
     df = pd.read_csv("test.csv")
     df.head()
     # df.info()
@@ -1932,7 +3061,9 @@ def BCI_data():
 
     TimeAxis = timestamp_series_sec-timestamp_series_sec.iloc[0]
     # print(TimeAxis)
-
+    fig1 = Figure(figsize=(6, 4), dpi=100)
+    canvas = FigureCanvasTkAgg(fig1, master=frame)
+    ax = fig1.add_subplot(111)
     # calculates ratio
     print("Theta mean:", np.mean(cleaned_df['Theta']))
     print("LowBeta mean:", np.mean(cleaned_df['LowBeta']))
@@ -1944,43 +3075,53 @@ def BCI_data():
 
     ratio = np.divide(np.mean(cleaned_df['Theta']), np.mean(cleaned_df['LowBeta']))
     # Create the ratio graph
-    plt.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
+    ax.plot(TimeAxis / 60, df['Theta-Beta Ratio'], linestyle='-.', linewidth=0.1, marker='o', color='b')
 
     # Add title and axis labels
-    plt.title(f'Theta/LowBeta = {round(ratio, 4)}')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Theta/LowBeta')
-
+    ax.set_title(f'Theta/LowBeta = {round(ratio, 4)}')
+    ax.set_xlabel('Time (min)')
+    ax.set_ylabel('Theta/LowBeta')
+    
     # Show the graph
     # plt.show()
-
+    canvas.draw()
+    canvas.get_tk_widget().pack(pady=25)
     """# **Exploratory Data Analysis**
     Each feature analysis
     """
 
     df['AttentionMean'] = (cleaned_df['Attention'])
     mean = np.mean(cleaned_df['Attention'])
-    plt.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
+    fig2 = Figure(figsize=(6, 4), dpi=100)
+    canvas2 = FigureCanvasTkAgg(fig2, master=frame)
+    ax2 = fig2.add_subplot(111)
+    ax2.plot(TimeAxis / 60, df['AttentionMean'], linestyle='-.', linewidth=0.1, marker='o', color='g')
 
     # Add title and axis labels
-    plt.title(f'AttentionMean = {round(mean, 3)}')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Attention')
+    ax2.set_title(f'AttentionMean = {round(mean, 3)}')
+    ax2.set_xlabel('Time (min)')
+    ax2.set_ylabel('Attention')
 
     # Show the graph
-    # plt.show()
-
+    #plt.show()
+    canvas2.draw()
+    canvas2.get_tk_widget().pack(pady=25)
     df['MeditationMean'] = (cleaned_df['Meditation'])
     mean = np.mean(cleaned_df['Meditation'])
-    plt.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
+    fig3 = Figure(figsize=(6, 4), dpi=100)
+    canvas3 = FigureCanvasTkAgg(fig3, master=frame)
+    ax3 = fig3.add_subplot(111)
+    ax3.plot(TimeAxis / 60, df['MeditationMean'], linestyle='-.', linewidth=0.1, marker='o', color='c')
 
     # Add title and axis labels
-    plt.title(f'MeditationMean = {round(mean, 3)}')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Meditation')
+    ax3.set_title(f'MeditationMean = {round(mean, 3)}')
+    ax3.set_xlabel('Time (min)')
+    ax3.set_ylabel('Meditation')
 
     # Show the graph
-    # plt.show()
+    #plt.show()
+    canvas3.draw()
+    canvas3.get_tk_widget().pack(pady=25)
 
 
 import tkinter as tk
@@ -1989,17 +3130,22 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import glob
 
 
+"""
+    Page **** Results ****
+"""
 def test_results():
     # Clear
     for widgets in main_frame.winfo_children():
         widgets.destroy()
 
-    main_frame.grid_columnconfigure((0), weight=1)
-    main_frame.grid_columnconfigure((1,2,3,4), weight=0)
-    main_frame.grid_rowconfigure(2, weight=1)
-    main_frame.grid_rowconfigure((0,1,3,4), weight=0)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure(0, weight=1)
+    main_frame.grid_columnconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    main_frame.grid_rowconfigure((1,2,3,4,5,6,7,8,9,10), weight=0)
+    scroll_frame = customtkinter.CTkScrollableFrame(main_frame)
+    scroll_frame.grid(row=0, column=0, sticky='NSEW')
     # Back Button
-    back_button = customtkinter.CTkButton(master=main_frame,
+    back_button = customtkinter.CTkButton(master=scroll_frame,
                                           text="Back",
                                           width=100,
                                           font=('consolas', 15),
@@ -2189,7 +3335,14 @@ def patientinfo_click(event = None):
     home_tab.configure(fg_color="#1f6aa5", state='normal')
     patient_tab.configure(fg_color="#1f6aa5", state='normal')
     patientinfo_tab.configure(fg_color="#2752D6", state='disabled')
-    patientinfo()
+    treatment_id = dc.get_activeTreatment(patient_id)
+    if treatment_id == -1:
+        if messagebox.askokcancel('No active treatment', 'No active treatment found for this patient. Would you like to create one?'):
+            today = datetime.datetime.now().strftime("%m/%d/%Y")
+            treatment_id = dc.add_treatment(None, patient_id, today, None, None, 1)
+            show_treatment(treatment_id)
+    else:
+        show_treatment(treatment_id)
 
 def on_enterMenu(label, frame):
     frame.configure(fg_color="#2752D6")
@@ -2313,7 +3466,6 @@ def close_appointment():
     appointment_window = None
 
 doctor_window = None
-
 def close_doctor():
     global doctor_window
     doctor_window.destroy()
@@ -2382,7 +3534,7 @@ def create_menu(page):
     label_home.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
     frm_patientmenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
     frm_patientmenu.pack(fill='x', pady=20, ipady=1, ipadx=1)
-    label_patient = customtkinter.CTkLabel(frm_patientmenu, text=' Patient', font=('Consolas', 25), anchor='w',
+    label_patient = customtkinter.CTkLabel(frm_patientmenu, text=' Patients', font=('Consolas', 25), anchor='w',
         image=customtkinter.CTkImage(light_image=Image.open('images/patient.png'), size=(30,30)), compound='left', text_color='white')
     label_patient.pack(fill='x', ipadx=30, ipady=10, padx=(15,0))
     frm_patientinfomenu =customtkinter.CTkFrame(frm_menu, corner_radius=0, fg_color='#2b2b2b')
@@ -2406,14 +3558,14 @@ def create_menu(page):
     elif page == 'patient':
         main_label = label_patient
         main_frame = frm_patientmenu
-    elif page == 'patient_info':
+    elif page == 'show_treatment':
         main_label = label_patientinfo
         main_frame = frm_patientinfomenu
     main_label.configure(bg_color='white', text_color='black')
     main_frame.configure(fg_color='white')
     label_home.bind('<Button-1>', home)
     label_patient.bind('<Button-1>', patient)
-    label_patientinfo.bind('<Button-1>', patientinfo)
+    label_patientinfo.bind('<Button-1>', lambda e: show_treatment(None))
     label_app.bind('<Button-1>', appointments)
     label_profile.bind('<Button-1>', doctor)
     for widgets in [(label_home, frm_homemenu), (label_patient, frm_patientmenu), (label_patientinfo, frm_patientinfomenu),

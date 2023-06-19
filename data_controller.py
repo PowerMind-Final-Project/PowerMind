@@ -45,12 +45,15 @@ def export_metrics():
 # PatientID, FirstName, LastName, D.O.B
 
 # CreateTreatment
-def add_patient(first_name, last_name, phone, email, birth_date):
+def add_patient(first_name, last_name, phone, email, birth_date, start_treatment):
     global cursor, db
     if cursor:
         try:
             cursor.execute("""INSERT INTO patient (first_name, last_name, birth_date, phone, email) 
             VALUES (?, ?, ?, ?, ?)""", (first_name, last_name, birth_date, phone, email))
+            patient_id = cursor.lastrowid
+            cursor.execute("""INSERT INTO treatment (patient_id, start_date, active) 
+            VALUES (?, ?, 1)""", (patient_id, start_treatment))
             conn.commit()
         except Exception as e:
             print(str(e))
@@ -159,33 +162,34 @@ def remove_patient(patient_id):
 # TreatmentID, PatientID, StartDate, EndDate, Summary
 
 # CreateTreatment
-def add_treatment(treatment_name, patient_id, start_date, end_date, summary=""):
+def add_treatment(treatment_name, patient_id, start_date, end_date, summary, active):
     global cursor, db
     if cursor:
         try:
-            cursor.execute("INSERT INTO treatment(treatment_name, patient_id, start_date, end_date, summary) VALUES (?, ?, ?, ?, ?)",
-                (treatment_name, patient_id, start_date, end_date, summary))
+            cursor.execute("INSERT INTO treatment(treatment_name, patient_id, start_date, end_date, summary, active) VALUES (?, ?, ?, ?, ?, ?)",
+                (treatment_name, patient_id, start_date, end_date, summary, active))
             conn.commit()
+            return cursor.lastrowid
         except Exception as e:
             print(str(e))
 
 
-# ReadAllTreatmentsForPatient
+# get archived treatments
 def get_treatments(patient_id, filter = None, col_filter = None, sort = None):
     global cursor, db
     if cursor:
         d = {
                     "Treatment ID": "treatment_id", 
-                    "Treatment Name": "treatment_name", 
+                    "Patient Name": "first_name", 
                     "Start Date": "start_date", 
-                    "End Date": "end_date",
-                    "Summary": "summary"}
+                    "End Date": "end_date"}
         try:
             if not filter:
-                cursor.execute(f"SELECT * FROM treatment WHERE patient_id=? ORDER BY {d[sort]}", (patient_id,))
+                cursor.execute(f"""SELECT treatment_id, first_name, last_name, start_date, end_date FROM treatment INNER JOIN patient 
+                    ON treatment.patient_id = patient.id WHERE active=0 ORDER BY {d[sort]}""")
             else:
-                
-                cursor.execute(f"SELECT * FROM treatment WHERE {d[col_filter]} LIKE ? AND patient_id=? ORDER BY {d[sort]}", (filter+'%', patient_id))
+                cursor.execute(f"""SELECT treatment_id, first_name, last_name, start_date, end_date FROM treatment INNER JOIN patient 
+                    ON treatment.patient_id = patient.id WHERE {d[col_filter]} LIKE ? AND active=0 ORDER BY {d[sort]}""", (filter+'%',))
             l = cursor.fetchall()
             if sort == 'Start Date':
                 l = sorted(l, key=lambda x: datetime.strptime(x[3], '%m/%d/%Y'))
@@ -288,18 +292,48 @@ def remove_treatment(treatment_id):
             print(str(e))
             return False
 
+def archive_treatment(treatment_id):
+    global cursor, db
+    if cursor:
+        try:
+            today = datetime.today().strftime("%m/%d/%Y")
+            cursor.execute("UPDATE treatment SET active = 0, end_date = ? WHERE treatment_id = ?", (today, treatment_id))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(str(e))
+            return False
+
+def get_activeTreatment(patient_id):
+    global cursor, db
+    if cursor:
+        try:
+            cursor.execute("SELECT treatment_id FROM treatment WHERE patient_id = ? AND active = 1", (patient_id,))
+            result = cursor.fetchone()
+            if result:
+                return result[0]
+            else:
+                return -1
+        except Exception as e:
+            print(str(e))
 
 # Visit
 # VisitID, TreatmentID, Date, Summary, AttentionLevel, ExternalSource
 
 
 # CreateVisit
-def add_visit(treatment_id, date, visit_type, summary, attention_level, external_source, doctor_name):
+def add_visit(treatment_id, date, visit_type, summary, attention_level, external_source, doctor_name, recommendation, rec_date, references, ref_date):
     global cursor, db
     if cursor:
-        cursor.execute("""INSERT INTO visit (treatment_id, date, summary, attention_level, external_source, visit_type, doctor_name) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)""", (treatment_id, date, summary, attention_level, external_source, visit_type, doctor_name))
+        if rec_date:
+            rec_date = datetime.strptime(rec_date, "%m/%d/%y").strftime("%m/%d/%Y")
+        if ref_date:
+            ref_date = datetime.strptime(ref_date, "%m/%d/%y").strftime("%m/%d/%Y")
+        cursor.execute("""INSERT INTO visit (treatment_id, date, summary, attention_level, external_source, visit_type, doctor_name, recommendation, recommendation_date, reference, reference_date) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (treatment_id, date, summary, attention_level, external_source, visit_type, doctor_name, recommendation,
+            rec_date, references, ref_date))
         conn.commit()
+        return cursor.lastrowid
 
 
 # ReadAllVisits
@@ -308,14 +342,18 @@ def get_visits(treatment_id, filter = None, col_filter = None, sort = None):
     if cursor:
         d = {
                     "ID": "id", 
-                    "Visit Type": "visit_type", 
+                    "Reports": "visit_type", 
                     "Date": "date",
-                    "Attention Level": "attention_level"}
+                    "Attention Level": "attention_level",
+                    "Recommendation": "recommendation",
+                    "Recommendation Date": "recommendation_date",
+                    "Reference": "reference",
+                    "Reference Date": "reference_date"}
         try:
             if not filter:
-                cursor.execute(f"SELECT id, treatment_id, date, visit_type, attention_level FROM visit WHERE treatment_id=? ORDER BY {d[sort]}", (treatment_id,))
+                cursor.execute(f"SELECT id, treatment_id, date, visit_type, attention_level, recommendation, recommendation_date, reference, reference_date FROM visit WHERE treatment_id=? ORDER BY {d[sort]}", (treatment_id,))
             else:
-                cursor.execute(f"SELECT id, treatment_id, date, visit_type, attention_level FROM visit WHERE {d[col_filter]} LIKE ? AND treatment_id=? ORDER BY {d[sort]}", (filter+'%', treatment_id))
+                cursor.execute(f"SELECT id, treatment_id, date, visit_type, attention_level, recommendation, recommendation_date, reference, reference_date FROM visit WHERE {d[col_filter]} LIKE ? AND treatment_id=? ORDER BY {d[sort]}", (filter+'%', treatment_id))
             l = cursor.fetchall()
             if sort == 'Date':
                 l = sorted(l, key=lambda x: datetime.strptime(x[2], '%m/%d/%Y'))
@@ -332,14 +370,16 @@ def get_visits(treatment_id, filter = None, col_filter = None, sort = None):
                     visits.append(row)
         return visits
 
-
 # UpdateVisit
-def update_visit(visit_id, summary, attention_level, external_source, doctor_name):
+def update_visit(visit_id, summary, attention_level, external_source, doctor_name, recommendation, rec_date, references, ref_date):
     global cursor, db
     if cursor:
+        rec_date = datetime.strptime(rec_date, "%m/%d/%y").strftime("%m/%d/%Y")
+        ref_date = datetime.strptime(ref_date, "%m/%d/%y").strftime("%m/%d/%Y")
         try:
-            cursor.execute("UPDATE visit SET summary=?, attention_level=?, external_source=?, doctor_name=? WHERE id=?", 
-            (summary, attention_level, external_source, doctor_name, visit_id))
+            cursor.execute("""UPDATE visit SET summary=?, attention_level=?, external_source=?, doctor_name=?, recommendation=?,
+                recommendation_date=?, reference=?, reference_date=? WHERE id=?""", 
+            (summary, attention_level, external_source, doctor_name, recommendation, rec_date, references, ref_date, visit_id))
             conn.commit()
         except Exception as e:
             print(str(e))
@@ -354,7 +394,6 @@ def update_visit(visit_id, summary, attention_level, external_source, doctor_nam
                     row["external_source"] = external_source if external_source != "" else row["external_source"]
                     writer.writerow(row)
                     break
-
 
 # DeleteVisit
 def remove_visit(visit_id):
@@ -371,3 +410,23 @@ def remove_visit(visit_id):
         df = pd.read_csv("visits.csv")
         df = df[df.visit_id != visit_id]
         df.to_csv("visits.csv", index=False)
+
+def get_last_visit_id():
+    global cursor, db
+    if cursor:
+        try:
+            cursor.execute("SELECT max(id) FROM visit")
+            l = cursor.fetchone()
+            return l
+        except Exception as e:
+            print(str(e))
+
+def update_attention(visit_id, attention_level):
+    try:
+        cursor.execute("UPDATE visit SET attention_level=? WHERE id=?", (
+            attention_level,
+            visit_id,
+        ))
+        conn.commit()
+    except Exception as e:
+        print(str(e))
